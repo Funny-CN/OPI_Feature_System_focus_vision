@@ -1,0 +1,22 @@
+{
+  "target_standard": {
+    "pixel_length": 0.0,
+    "diameter": 0.0,
+    "hsv_features": {
+      "hue": 0,
+      "saturation": 0,
+      "value": 0
+    },
+    "tolerance": {
+      "length": 0.1,
+      "diameter": 0.05,
+      "hsv": 10
+    }
+  },
+  "target_image": "samples/target_screw.jpg",
+  "detection_interval": 0.1,
+  "hardware_settings": {
+    "motor_steps_per_mm": 100,
+    "servo_angle_range": [0, 180]
+  }
+}
