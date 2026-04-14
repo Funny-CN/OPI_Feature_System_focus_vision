@@ -9,10 +9,6 @@ scipy>=1.7.0          # Scientific computing
 matplotlib>=3.4.0     # Plotting and visualization
 pillow>=8.3.0         # Image processing
 
-# 树莓派硬件控制
-RPi.GPIO>=0.7.0       # GPIO control for Raspberry Pi
-pigpio>=1.78          # Advanced GPIO control
-
 # 配置和数据处理
 configparser>=5.0.0   # Configuration file parsing
 jsonschema>=4.0.0     # JSON schema validation
@@ -22,10 +18,3 @@ pytest>=6.2.0         # Testing framework
 pytest-cov>=2.12.0    # Test coverage
 black>=21.0b0         # Code formatting
 flake8>=3.9.0         # Code linting
-
-# 文档生成
-sphinx>=4.0.0         # Documentation generation
-sphinx-rtd-theme>=1.0.0  # Read the Docs theme
-
-# 性能优化
-numba>=0.53.0         # Just-in-time compilation
