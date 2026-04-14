@@ -11,12 +11,14 @@
       "length": 0.1,
       "diameter": 0.05,
       "hsv": 10
-    }
+    },
+    "pixel_to_mm_ratio": 0.05
   },
   "target_image": "samples/target_screw.jpg",
   "detection_interval": 0.1,
   "hardware_settings": {
     "motor_steps_per_mm": 100,
     "servo_angle_range": [0, 180]
-  }
+  },
+  "default_tolerance": 0.1
 }
