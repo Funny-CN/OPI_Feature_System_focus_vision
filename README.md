@@ -56,8 +56,60 @@ vision_test_project/
 
 - Python 3.x
 - OpenCV (视觉处理)
+- NumPy (数值计算)
 - 树莓派 (硬件平台)
 - JSON (配置管理)
+
+## 依赖安装
+
+### 使用pip安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 开发环境建议
+
+```bash
+# 创建虚拟环境
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# 或
+venv\Scripts\activate    # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 安装开发依赖
+pip install -r requirements-dev.txt
+```
+
+### 树莓派特定依赖
+
+对于树莓派硬件控制，需要额外安装：
+
+```bash
+# 安装树莓派GPIO库
+sudo apt-get update
+sudo apt-get install python3-rpi.gpio
+sudo apt-get install python3-pigpio
+sudo systemctl start pigpiod
+```
+
+## 依赖说明
+
+- **opencv-python**: 核心视觉处理库
+- **numpy**: 数值计算和数组操作
+- **scipy**: 科学计算函数
+- **matplotlib**: 图像可视化和调试
+- **pillow**: 图像处理和格式转换
+- **RPi.GPIO**: 树莓派GPIO控制
+- **pigpio**: 高级GPIO控制
+- **pytest**: 单元测试框架
+- **black**: 代码格式化
+- **flake8**: 代码质量检查
+- **sphinx**: 文档生成
+- **numba**: 性能优化
 
 ## 注意事项
 
