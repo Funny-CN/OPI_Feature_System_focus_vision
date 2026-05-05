@@ -6,18 +6,22 @@
 
 ```
 vision_test_project/
-├── main.py                 # 主入口文件
+├── main.py                # 主入口文件
+├── main_gui.py            # 图形操作主入口文件
 ├── config.json            # 配置文件，存储目标标准特征数据
 ├── .gitignore             # Git 忽略文件
 ├── README.md              # 项目说明文档
+├── requirements.text      # 需要安装的库文件
 ├── core/
 │   ├── __init__.py
 │   └── detector.py        # 核心视觉算法：包含采样、特征提取、比对逻辑
 ├── hardware/
 │   ├── __init__.py
 │   └── hardware_stub.py   # 硬件接口存根（步进电机和舵机）
-├── samples/               # 存放目标螺丝静态图
-└── test_mix/              # 存放混料静态图
+├── ui/                    
+│   ├── __init__.py
+│   └── main_window.py     # 图形操作界面
+├── samples/               # 存放待测量螺丝静态图
 ```
 
 ## 功能模块
