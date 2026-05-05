@@ -1,24 +1,26 @@
 {
+  "target_image": "samples/target.jpg",
   "target_standard": {
-    "pixel_length": 0.0,
-    "diameter": 0.0,
+    "length_mm": 26.0,        
+    "diameter_mm": 6.0,     
     "hsv_features": {
-      "hue": 0,
-      "saturation": 0,
-      "value": 0
+      "h": 0,
+      "s": 0,
+      "v": 0
     },
     "tolerance": {
-      "length": 0.1,
-      "diameter": 0.05,
-      "hsv": 10
-    },
-    "pixel_to_mm_ratio": 0.05
+      "length_mm": 1.0,      
+      "diameter_mm": 0.5,    
+      "h": 10,               
+      "s": 50,               
+      "v": 50                
+    }
   },
-  "target_image": "samples/target_screw.jpg",
-  "detection_interval": 0.1,
-  "hardware_settings": {
-    "motor_steps_per_mm": 100,
-    "servo_angle_range": [0, 180]
+  "calibration": {
+    "pixel_to_mm_ratio": 0.05, 
+    "ruler_marker_width_mm": 10.0 
   },
-  "default_tolerance": 0.1
+  "paths": {
+    "test_dir": "test_mix/"
+  }
 }
