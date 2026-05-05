@@ -2,103 +2,124 @@
 视觉检测器模块
 包含螺丝特征提取和比对的核心算法
 """
+       
+import cv2
+import numpy as np
+from typing import Union, List, Optional
 
 class ScrewDetector:
-    """
-    螺丝视觉检测器类
-    负责目标采样、特征提取和实时比对
-    """
-    
-    def __init__(self):
-        """初始化检测器"""
-        self.target_standard = None  # 存储目标标准特征
-        self.current_sample = None   # 存储当前采样特征
-        
-    def target_sampling(self, image_path: str) -> dict:
+    def __init__(self, coin_real_diameter_mm: float = 25.0):
         """
-        目标采样阶段
-        提取像素长度、直径、HSV特征并锁定目标标准
+        初始化检测器
+        :param coin_real_diameter_mm: 参照物硬币的实际直径（默认一元硬币25.0mm）
+        """
+        self.coin_real_diameter_mm = coin_real_diameter_mm
+        self.target_diameter_mm = None  # 存放采样出来的标准螺丝直径
         
-        参数:
-            image_path: 目标螺丝图片路径
+        # 提取自你队友代码中的霍夫圆参数
+        self.hough_params = {
+            'dp': 1,
+            'min_dist': 350,
+            'param1': 100,
+            'param2': 40,
+            'min_radius': 60,
+            'max_radius': 300
+        }
+
+    def target_sampling(self, image_path: str):
+        """
+        第一步：目标采样
+        从一张标准图片里学习螺丝的直径，并返回直径和标注后的图片
+        """
+        img = cv2.imread(image_path)
+        if img is None:
+            print(f"错误：无法读取采样图片 {image_path}")
+            return None, None
+        
+        # 这里的返回值对应你刚刚修改好的 _calculate_real_diameters
+        diameters, processed_img = self._calculate_real_diameters(img)
+        
+        if diameters:
+            # 记录第一个检测到的螺丝直径作为标准（通常采样图里只有一个螺丝）
+            self.target_diameter_mm = diameters[0]
+            # 返回直径数值和处理后的图片对象
+            return self.target_diameter_mm, processed_img
             
-        返回:
-            dict: 包含目标标准特征的字典
-        """
-        # TODO: 实现目标螺丝的特征提取
-        # 1. 读取目标图片
-        # 2. 提取像素长度
-        # 3. 提取直径
-        # 4. 提取HSV特征
-        # 5. 锁定目标标准
-        pass
+        return None, None
         
-    def real_time_comparison(self, image: any) -> bool:
+
+    def real_time_comparison(self, img: np.ndarray, tolerance: float = 1.0):
         """
-        实时比对阶段
-        实现 S_current 与 S_target 的逻辑比对
+        核心功能：比对当前图片中的螺丝是否合格
+        返回：(是否合格, 标注后的图片)
+        """
+        # 接收两个返回值：直径列表和标注后的图片
+        diameters, processed_img = self._calculate_real_diameters(img)
         
-        参数:
-            image: 当前检测的图片
+        if not diameters:
+            return False, processed_img
             
-        返回:
-            bool: 是否匹配目标标准
+        # 检查是否有任何一个圆的直径在容差范围内
+        is_match = False
+        for d in diameters:
+            if abs(d - self.target_diameter_mm) <= tolerance:
+                is_match = True
+                break
+                
+        return is_match, processed_img
+
+    def _calculate_real_diameters(self, img: np.ndarray) -> List[float]:
         """
-        # TODO: 实现实时特征比对
-        # 1. 提取当前图片特征
-        # 2. 与目标标准进行比对
-        # 3. 返回比对结果
-        pass
-        
-    def extract_pixel_length(self, image: any) -> float:
+        核心算法：计算直径并在图上标注
         """
-        提取像素长度特征
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (9, 9), 0)
         
-        参数:
-            image: 输入图片
+        circles = cv2.HoughCircles(
+            image=blurred, 
+            method=cv2.HOUGH_GRADIENT, 
+            dp=self.hough_params['dp'],
+            minDist=float(self.hough_params['min_dist']),
+            param1=float(self.hough_params['param1']),
+            param2=float(self.hough_params['param2']),
+            minRadius=int(self.hough_params['min_radius']),
+            maxRadius=int(self.hough_params['max_radius'])
+        )
+        
+        real_diameters = []
+        if circles is not None:
+            circles = np.uint16(np.around(circles[0]))
+            ref_circle = max(circles, key=lambda c: c[2])
+            pixel_per_mm = (2 * ref_circle[2]) / self.coin_real_diameter_mm
             
-        返回:
-            float: 像素长度值
-        """
-        # TODO: 实现像素长度提取算法
-        pass
-        
-    def extract_diameter(self, image: any) -> float:
-        """
-        提取直径特征
-        
-        参数:
-            image: 输入图片
+            # --- 绘图逻辑开始 ---
+            for circ in circles:
+                # 画圆心和圆周 (绿色)
+                cv2.circle(img, (circ[0], circ[1]), circ[2], (0, 255, 0), 2)
+                cv2.circle(img, (circ[0], circ[1]), 2, (0, 0, 255), 3)
+                
+                if np.array_equal(circ, ref_circle):
+                    label = f"REF: {self.coin_real_diameter_mm}mm"
+                else:
+                    d_mm = (2 * circ[2]) / pixel_per_mm
+                    real_diameters.append(d_mm)
+                    label = f"{d_mm:.2f}mm"
+                
+                # 在圆旁边写上数值
+                # 在圆旁边写上数值
+                cv2.putText(
+                    img, 
+                    label, 
+                    (circ[0] - 40, circ[1] - circ[2] - 20), # 坐标稍微往上移一点，避免压到圆
+                    cv2.FONT_HERSHEY_SIMPLEX, 
+                    1.5,           # <--- 这里的 0.8 改成 1.5 (这是字号，越大字越大)
+                    (255, 0, 0),   # 颜色 (蓝色)
+                    3              # <--- 这里的 2 改成 3 (这是粗细，越大字越粗)
+                )
+            # --- 绘图逻辑结束 ---
             
-        返回:
-            float: 直径值
-        """
-        # TODO: 实现直径提取算法
-        pass
-        
-    def extract_hsv_features(self, image: any) -> dict:
-        """
-        提取HSV颜色特征
-        
-        参数:
-            image: 输入图片
+            # 显示标注后的图片
+            # cv2.imshow("Detection Result", img)
             
-        返回:
-            dict: HSV特征字典
-        """
-        # TODO: 实现HSV特征提取算法
-        pass
-        
-    def compare_features(self, current_features: dict, target_features: dict) -> bool:
-        """
-        比对当前特征与目标特征
-        
-        参数:
-            current_features: 当前提取的特征
-            target_features: 目标标准特征
-            
-        返回:
-            bool: 特征是否匹配
-        """
-        # TODO: 实现特征比对逻辑
-        pass
+        # 2. 修改返回值，把处理过的 img 也传出去
+        return real_diameters, img  # 原来只返回 real_diameters
