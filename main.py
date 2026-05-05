@@ -3,7 +3,9 @@
 负责协调视觉检测和硬件控制
 """
 
+import cv2
 import json
+import os
 from core.detector import ScrewDetector
 from hardware.hardware_stub import HardwareController
 
@@ -21,45 +23,75 @@ def main():
         hardware.connect_servo()
         
         # 2. 加载配置
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-            target_standard = config.get('target_standard', {})
-            
-        # 3. 目标采样
-        print("开始目标采样...")
-        target_features = detector.target_sampling(config.get('target_image', 'samples/target_screw.jpg'))
-        if not target_features:
-            print("目标采样失败")
+        if not os.path.exists('config.json'):
+            print("错误: 找不到 config.json 配置文件")
             return
             
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            
+        # 3. 目标采样 (显示采样结果)
+        print("开始目标采样...")
+        target_path = 'samples/target.jpg'
+        
+        if not os.path.exists(target_path):
+            print(f"错误: 找不到采样图片 {target_path}")
+            return
+
+        # 执行采样
+        target_diameter = detector.target_sampling(target_path)
+        
+        if target_diameter is None:
+            print("目标采样失败，未能在图中检测到足够的圆（硬币和螺丝）")
+            return
+        
+        # --- 新增逻辑：展示采样预览 ---
+        print(f"\n[采样完成] 识别到的标准直径为: {target_diameter:.2f} mm")
+        print("请在弹出的图片窗口中检查标注是否准确，按键盘任意键开始批量检测测试图...")
+        cv2.waitKey(0) 
+        cv2.destroyAllWindows() # 关闭采样窗口，为接下来的检测腾出空间
+        # ----------------------------
+            
         # 4. 实时检测循环
-        print("开始实时检测...")
-        while True:
-            # TODO: 实现实时图像获取
-            # current_image = get_current_image()
+        print("\n开始批量实时检测...")
+        test_dir = 'test_mix/' 
+        
+        if not os.path.exists(test_dir):
+            print(f"错误: 找不到测试文件夹 {test_dir}")
+            return
             
-            # 5. 特征比对
-            is_match = detector.real_time_comparison(None)  # 传入当前图像
-            
-            # 6. 硬件控制
-            if is_match:
-                print("检测到匹配螺丝")
-                # hardware.move_motor(steps=100, direction="forward")
-                # hardware.control_servo(angle=90)
-            else:
-                print("检测到非匹配螺丝")
-                # hardware.move_motor(steps=50, direction="backward")
+        # 获取图片列表
+        test_files = [f for f in os.listdir(test_dir) if f.endswith(('.jpg', '.png', '.jpeg'))]
+
+        if not test_files:
+            print(f"警告: {test_dir} 文件夹内没有找到图片")
+        else:
+            print(f"检测到 {len(test_files)} 张测试图片，准备开始...")
+
+            for file_name in test_files:
+                img_path = os.path.join(test_dir, file_name)
+                current_image = cv2.imread(img_path)
                 
-            # 7. 延时
-            # time.sleep(0.1)
+                if current_image is not None:
+                    # 调用比对功能 (由于detector.py内部已写好绘图逻辑，会自动弹窗)
+                    is_match = detector.real_time_comparison(current_image)
+                    
+                    status = "【合格】" if is_match else "【不合格】"
+                    print(f"图片: {file_name} -> 结果: {status}")
+                    
+                    print("按任意键检测下一张 (或在图片窗口点关闭)...")
+                    cv2.waitKey(0) 
+
+        print("\n--- 所有图片检测完成 ---")
             
     except KeyboardInterrupt:
-        print("\n程序终止")
+        print("\n程序由用户强制终止")
     except Exception as e:
-        print(f"程序出错: {e}")
+        print(f"程序运行出错: {e}")
     finally:
-        # 8. 清理资源
+        # 清理资源
         hardware.disconnect_all()
+        cv2.destroyAllWindows()
         print("系统关闭")
 
 if __name__ == "__main__":
