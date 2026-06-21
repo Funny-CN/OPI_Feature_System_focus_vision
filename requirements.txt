@@ -1,21 +1,29 @@
 ﻿# 螺丝特征筛选视觉系统依赖（Orange Pi 5 Pro 适配版）
 
-# 核心视觉库
-opencv-python>=4.5.0  # OpenCV for computer vision
-numpy>=1.21.0         # Numerical operations
-scipy>=1.7.0          # Scientific computing
+# =============================================================
+#  GUI 框架（二选一，两者可共存）
+# =============================================================
+# 新版（默认）：PySide6 + QML — 深色玻璃质感 UI，硬件加速
+PySide6>=6.6.0
+# 旧版（回滚用）：PyQt6 + Widgets — 原 Widgets 界面
+PyQt6>=6.5.0
+
+# =============================================================
+#  核心视觉库
+# =============================================================
+opencv-python>=4.5.0
+numpy>=1.21.0
+scipy>=1.7.0
 
 # 图像处理可视化
-matplotlib>=3.4.0     # Plotting and visualization
-pillow>=8.3.0         # Image processing
+matplotlib>=3.4.0
+pillow>=8.3.0
 
 # --- Orange Pi 5 Pro 硬件 GPIO 依赖 ---
-# OPi.GPIO: RPi.GPIO 的香橙派移植版，API 风格一致
 OPi.GPIO>=0.4.0
-# python3-gpiod: 现代 Linux GPIO 用户空间 API，作为 OPi.GPIO 不可用时的后备
 gpiod>=2.0.0
 
 # 开发测试
-pytest>=6.2.0         # Testing framework
-black>=21.0b0         # Code formatting
-flake8>=3.9.0         # Code linting
+pytest>=6.2.0
+black>=21.0b0
+flake8>=3.9.0
