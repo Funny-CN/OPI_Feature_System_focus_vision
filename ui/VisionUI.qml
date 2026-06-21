@@ -109,17 +109,17 @@ ApplicationWindow {
                                 PropertyAnimation { to: 1.0; duration: 1200 }
                             }
                         }
-                        Text { text: "视觉智能筛选系统"; font.pixelSize: 15; font.weight: Font.Bold; color: cTextWhite; anchors.verticalCenter: parent.verticalCenter }
-                        Text { text: "v2.0"; font.pixelSize: 10; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                        Text { text: "视觉智能筛选系统"; font.pixelSize: 15; font.weight: Font.Bold; color: cTextWhite; Layout.alignment: Qt.AlignVCenter }
+                        Text { text: "v2.0"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignVCenter }
                     }
                     Item { Layout.fillWidth: true }
                     Row { spacing: 16
                         Row { spacing: 6
                             Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: cGreen }
-                            Text { text: "系统正常"; font.pixelSize: 12; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                            Text { text: "系统正常"; font.pixelSize: 12; color: cTextSec; Layout.alignment: Qt.AlignVCenter }
                         }
-                        Rectangle { width: 1; height: 18; color: Qt.rgba(255/255,255/255,255/255,0.06); anchors.verticalCenter: parent.verticalCenter }
-                        Text { text: "帧率: 10fps"; font.pixelSize: 12; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                        Rectangle { width: 1; height: 18; color: Qt.rgba(255/255,255/255,255/255,0.06); Layout.alignment: Qt.AlignVCenter }
+                        Text { text: "帧率: 10fps"; font.pixelSize: 12; color: cTextSec; Layout.alignment: Qt.AlignVCenter }
                     }
                 }
             }
@@ -145,10 +145,10 @@ ApplicationWindow {
                             Layout.fillWidth: true; Layout.preferredHeight: 34
                             color: Qt.rgba(0/255,0/255,0/255,0.25)
                             RowLayout { anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
-                                Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: cCyan }
-                                Text { text: "相机画面"; font.pixelSize: 12; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                                Rectangle { width: 6; height: 6; radius: 3; color: cCyan; Layout.alignment: Qt.AlignVCenter }
+                                Text { text: "相机画面"; font.pixelSize: 12; color: cTextSec; Layout.alignment: Qt.AlignVCenter }
                                 Item { Layout.fillWidth: true }
-                                Row { spacing: 4; anchors.verticalCenter: parent.verticalCenter
+                                Row { spacing: 4; Layout.alignment: Qt.AlignVCenter
                                     Rectangle { width: 5; height: 5; radius: 2; anchors.verticalCenter: parent.verticalCenter; color: "#FF4444"
                                         SequentialAnimation on opacity { loops: Animation.Infinite
                                             PropertyAnimation { to: 0.2; duration: 800 }
@@ -157,8 +157,8 @@ ApplicationWindow {
                                     }
                                     Text { text: "LIVE"; font.pixelSize: 9; color: "#FF4444"; font.weight: Font.Bold }
                                 }
-                                Rectangle { width: 1; height: 14; color: Qt.rgba(255/255,255/255,255/255,0.06); anchors.verticalCenter: parent.verticalCenter }
-                                Text { text: backend.currentFile; font.pixelSize: 11; color: cTextDim; anchors.verticalCenter: parent.verticalCenter }
+                                Rectangle { width: 1; height: 14; color: Qt.rgba(255/255,255/255,255/255,0.06); Layout.alignment: Qt.AlignVCenter }
+                                Text { text: backend.currentFile; font.pixelSize: 11; color: cTextDim; Layout.alignment: Qt.AlignVCenter }
                             }
                         }
                         Rectangle {
@@ -200,7 +200,7 @@ ApplicationWindow {
                         RowLayout { Layout.fillWidth: true
                             Text { text: "控制中心"; font.pixelSize: 14; font.weight: Font.Bold; color: cTextWhite }
                             Item { Layout.fillWidth: true }
-                            Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: backend.statusColor }
+                            Rectangle { width: 6; height: 6; radius: 3; color: backend.statusColor; Layout.alignment: Qt.AlignVCenter }
                         }
                         Rectangle { Layout.fillWidth: true; height: 1
                             gradient: Gradient {
@@ -262,8 +262,8 @@ ApplicationWindow {
                             DropShadow { anchors.fill: aiCard; source: aiCard; horizontalOffset: 0; verticalOffset: 0; color: Qt.rgba(0/255,242/255,254/255,0.05); radius: 8; samples: 14; transparentBorder: true }
                             ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 3
                                 Row { spacing: 6
-                                    Text { text: "●"; font.pixelSize: 10; color: cCyan; anchors.verticalCenter: parent.verticalCenter }
-                                    Text { text: "AI 检测结果"; font.pixelSize: 10; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                                    Text { text: "●"; font.pixelSize: 10; color: cCyan; Layout.alignment: Qt.AlignVCenter }
+                                    Text { text: "AI 检测结果"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignVCenter }
                                 }
                                 Row { spacing: 14
                                     Text { text: "标签: " + backend.aiResultLabel; font.pixelSize: 11; color: backend.aiResultLabel !== "--" ? cTextWhite : cTextSec }
