@@ -1,20 +1,21 @@
-# 螺丝特征筛选视觉系统依赖
+﻿# 螺丝特征筛选视觉系统依赖（Orange Pi 5 Pro 适配版）
 
 # 核心视觉库
 opencv-python>=4.5.0  # OpenCV for computer vision
 numpy>=1.21.0         # Numerical operations
 scipy>=1.7.0          # Scientific computing
 
-# 图像处理和可视化
+# 图像处理可视化
 matplotlib>=3.4.0     # Plotting and visualization
 pillow>=8.3.0         # Image processing
 
-# 配置和数据处理
-configparser>=5.0.0   # Configuration file parsing
-jsonschema>=4.0.0     # JSON schema validation
+# --- Orange Pi 5 Pro 硬件 GPIO 依赖 ---
+# OPi.GPIO: RPi.GPIO 的香橙派移植版，API 风格一致
+OPi.GPIO>=0.4.0
+# python3-gpiod: 现代 Linux GPIO 用户空间 API，作为 OPi.GPIO 不可用时的后备
+gpiod>=2.0.0
 
-# 开发和测试
+# 开发测试
 pytest>=6.2.0         # Testing framework
-pytest-cov>=2.12.0    # Test coverage
 black>=21.0b0         # Code formatting
 flake8>=3.9.0         # Code linting
