@@ -16,6 +16,7 @@ conda activate opi_vision
 
 === CMD ===
 conda activate opi_vision
+python main_gui.py
 
 === 直接使用环境中的 Python (无需激活) ===
 D:\Anaconda3\envs\opi_vision\python.exe your_script.py

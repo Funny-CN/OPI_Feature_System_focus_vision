@@ -1,533 +1,305 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-
-/*
- * VisionUI.qml — 视觉智能筛选系统主界面
- *
- * 风格：深色玻璃质感 + 渐变霓虹强调 (参考 Vision UI Dashboard)
- * 布局：左侧 65% 相机画面 + 右侧 35% 控制面板
- *
- * 后端绑定：backend (VisionBackend 实例，由 main_gui.py 设置)
- */
+import Qt5Compat.GraphicalEffects
 
 ApplicationWindow {
-    id: root
-    visible: true
-    width: 1280
-    height: 800
-    minimumWidth: 1024
-    minimumHeight: 680
-    color: "#0f111a"
+    id: root; visible: true
+    width: 1280; height: 800
+    minimumWidth: 1024; minimumHeight: 680
     title: "视觉智能筛选系统 v2.0"
 
-    // ── 颜色常量 ──────────────────────────────────
-    readonly property color cBg:          "#0f111a"
-    readonly property color cCard:        Qt.rgba(26/255, 29/255, 45/255, 0.6)
-    readonly property color cBorder:      Qt.rgba(255/255,255/255,255/255, 0.08)
-    readonly property color cAccent1:     "#667eea"
-    readonly property color cAccent2:     "#764ba2"
-    readonly property color cText:        "#dfe6e9"
-    readonly property color cTextSec:     "#636e72"
-    readonly property color cSuccess:     "#00B894"
-    readonly property color cDanger:      "#FF7675"
-    readonly property color cGlow:        Qt.rgba(102/255,126/255,234/255, 0.10)
+    readonly property color cBgStart:     "#070B14"
+    readonly property color cBgEnd:       "#0F1A2E"
+    readonly property color cCardBg:      Qt.rgba(20/255, 28/255, 47/255, 0.65)
+    readonly property color cCardBorder:  Qt.rgba(0/255, 242/255, 254/255, 0.20)
+    readonly property color cCyan:        "#00F2FE"
+    readonly property color cGreen:       "#00FFCC"
+    readonly property color cGold:        "#FFD700"
+    readonly property color cTextWhite:   "#FFFFFF"
+    readonly property color cTextSec:     Qt.rgba(255/255, 255/255, 255/255, 0.55)
+    readonly property color cGlowSoft:    Qt.rgba(0/255, 242/255, 254/255, 0.12)
 
-    // ── 主布局 ────────────────────────────────────
-    RowLayout {
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 20
-
-        // =========== 左侧：相机画面区域 ============
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.preferredWidth: 0.65
-            color: "transparent"
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 12
-
-                // ── 画面卡片 ──────────────────────
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: 16
-                    color: cCard
-                    border.color: cBorder
-                    border.width: 1
-                    clip: true
-
-                    Image {
-                        id: cameraFeed
-                        anchors.fill: parent
-                        anchors.margins: 2
-                        fillMode: Image.PreserveAspectFit
-                        source: "image://camera/live?" + backend.frameCounter
-                        cache: false
-
-                        // ── 浮动测量数值（右下） ──
-                        Rectangle {
-                            anchors.right: parent.right
-                            anchors.bottom: parent.bottom
-                            anchors.margins: 28
-                            width: 200
-                            height: 120
-                            radius: 16
-                            color: Qt.rgba(15/255, 17/255, 26/255, 0.78)
-                            border.color: Qt.rgba(102/255,126/255,234/255, 0.25)
-                            border.width: 1
-
-                            // 外围辉光层
-                            Rectangle {
-                                z: -1
-                                anchors.centerIn: parent
-                                width: parent.width + 24
-                                height: parent.height + 24
-                                radius: 28
-                                color: cGlow
-                            }
-
-                            Text {
-                                id: measureVal
-                                anchors.left: parent.left
-                                anchors.leftMargin: 22
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.verticalCenterOffset: -6
-                                text: backend.measuredDiameter > 0
-                                      ? backend.measuredDiameter.toFixed(2) : "--"
-                                font.pixelSize: 52
-                                font.weight: Font.Light
-                                color: cText
-                            }
-
-                            Text {
-                                anchors.bottom: measureVal.bottom
-                                anchors.bottomMargin: 5
-                                anchors.left: measureVal.right
-                                anchors.leftMargin: 6
-                                text: "mm"
-                                font.pixelSize: 16
-                                color: cTextSec
-                            }
-
-                            Text {
-                                anchors.bottom: parent.bottom
-                                anchors.bottomMargin: 14
-                                anchors.left: parent.left
-                                anchors.leftMargin: 22
-                                text: "直径"
-                                font.pixelSize: 11
-                                color: cTextSec
-                            }
-                        }
-
-                        // ── 文件名水印 ────────────
-                        Text {
-                            anchors.left: parent.left
-                            anchors.bottom: parent.bottom
-                            anchors.margins: 20
-                            text: backend.currentFile
-                            font.pixelSize: 12
-                            color: Qt.rgba(255/255,255/255,255/255, 0.3)
-                        }
-                    }
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: cBgStart }
+            GradientStop { position: 1.0; color: cBgEnd }
+        }
+        Canvas {
+            anchors.fill: parent; opacity: 0.035
+            onPaint: {
+                var ctx = getContext("2d");
+                ctx.strokeStyle = Qt.rgba(0/255,242/255,254/255,1);
+                ctx.lineWidth = 0.5; var step = 64;
+                for (var x = step; x < width; x += step) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
                 }
+                for (var y = step; y < height; y += step) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+                }
+            }
+        }
+    }
 
-                // ── 底部状态栏 ────────────────────
-                Row {
-                    spacing: 20
+    ColumnLayout {
+        anchors.fill: parent; anchors.margins: 20; spacing: 16
 
-                    Rectangle {
-                        id: dot
-                        width: 8; height: 8; radius: 4
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: backend.statusColor
-
-                        SequentialAnimation on opacity {
-                            loops: Animation.Infinite
-                            running: backend.statusText === "分析中..."
-                            PropertyAnimation { to: 0.3; duration: 600 }
-                            PropertyAnimation { to: 1.0; duration: 600 }
+        Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 52; radius: 10
+            color: Qt.rgba(20/255,28/255,47/255,0.4)
+            border.color: Qt.rgba(0/255,242/255,254/255,0.10); border.width: 1
+            RowLayout {
+                anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20
+                Row { spacing: 10
+                    Rectangle { width: 8; height: 8; radius: 4; anchors.verticalCenter: parent.verticalCenter; color: cCyan
+                        SequentialAnimation on opacity { loops: Animation.Infinite
+                            PropertyAnimation { to: 0.3; duration: 1200 }
+                            PropertyAnimation { to: 1.0; duration: 1200 }
                         }
                     }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: backend.statusText
-                        font.pixelSize: 13; color: cText
+                    Text { text: "视觉智能筛选系统"; font.pixelSize: 16; font.weight: Font.Bold; color: cTextWhite }
+                    Text { text: "v2.0"; font.pixelSize: 11; color: cTextSec; anchors.verticalCenter: parent.verticalCenter }
+                }
+                Item { Layout.fillWidth: true }
+                Row { spacing: 16
+                    Row { spacing: 6
+                        Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: cGreen }
+                        Text { text: "系统正常"; font.pixelSize: 12; color: cTextSec }
                     }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "帧率: 10fps"
-                        font.pixelSize: 13; color: cTextSec
-                    }
+                    Rectangle { width: 1; height: 20; color: Qt.rgba(255/255,255/255,255/255,0.06); anchors.verticalCenter: parent.verticalCenter }
+                    Text { text: "帧率: 10fps"; font.pixelSize: 12; color: cTextSec }
                 }
             }
         }
 
-        // =========== 右侧：控制面板 ============
-        Rectangle {
-            Layout.preferredWidth: 340
-            Layout.fillHeight: true
-            radius: 16
-            color: cCard
-            border.color: cBorder
-            border.width: 1
+        RowLayout {
+            Layout.fillWidth: true; Layout.fillHeight: true; spacing: 16
 
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 24
-                spacing: 18
-
-                // ── 标题 ──────────────────────────
-                Text {
-                    text: "控制中心"
-                    font.pixelSize: 15
-                    font.weight: Font.Bold
-                    color: cText
+            Rectangle {
+                id: cameraPane
+                Layout.fillWidth: true; Layout.fillHeight: true; Layout.preferredWidth: 0.65
+                radius: 12; color: cCardBg; border.color: cCardBorder; border.width: 1; clip: true
+                DropShadow {
+                    anchors.fill: parent; source: parent
+                    horizontalOffset: 0; verticalOffset: 0
+                    color: cGlowSoft; radius: 20; samples: 24; transparentBorder: true
                 }
-
-                // 分隔线
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: cBorder
-                }
-
-                // ── 1. 作业模式 ──────────────────
-                Text {
-                    text: "作业模式"
-                    font.pixelSize: 11; color: cTextSec
-                }
-
-                ComboBox {
-                    id: modeCombo
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 40
-                    model: ["螺丝", "螺母垫片", "其他"]
-                    currentIndex: 0
-
-                    background: Rectangle {
-                        radius: 10
-                        color: Qt.rgba(15/255,17/255,26/255, 0.4)
-                        border.color: cBorder; border.width: 1
-                    }
-                    contentItem: Text {
-                        leftPadding: 12
-                        verticalAlignment: Text.AlignVCenter
-                        text: modeCombo.displayText
-                        font.pixelSize: 14; color: cText
-                    }
-                    indicator: Rectangle {
-                        x: modeCombo.width - width - 12
-                        y: (modeCombo.height - 8) / 2
-                        width: 10; height: 8; color: "transparent"
-                        Canvas {
-                            anchors.fill: parent
-                            onPaint: {
-                                var ctx = getContext("2d");
-                                ctx.fillStyle = "#636e72";
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0);
-                                ctx.lineTo(width / 2, height);
-                                ctx.lineTo(width, 0);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
+                ColumnLayout { anchors.fill: parent; spacing: 0
+                    Rectangle {
+                        Layout.fillWidth: true; Layout.preferredHeight: 34
+                        color: Qt.rgba(0/255,0/255,0/255,0.25)
+                        RowLayout { anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
+                            Rectangle { width: 6; height: 6; radius: 3; anchors.verticalCenter: parent.verticalCenter; color: cCyan }
+                            Text { text: "相机画面"; font.pixelSize: 12; color: cTextSec }
+                            Item { Layout.fillWidth: true }
+                            Text { text: backend.currentFile; font.pixelSize: 11; color: Qt.rgba(255/255,255/255,255/255,0.3) }
                         }
                     }
-                    popup: Popup {
-                        y: modeCombo.height + 4
-                        width: modeCombo.width
-                        padding: 4
-                        background: Rectangle {
-                            radius: 10; color: "#1a1d2e"
-                            border.color: cBorder
+                    Rectangle {
+                        Layout.fillWidth: true; Layout.fillHeight: true; color: "#080C18"
+                        Image {
+                            id: cameraFeed; anchors.fill: parent; anchors.margins: 1
+                            fillMode: Image.PreserveAspectFit
+                            source: "image://camera/live?" + backend.frameCounter; cache: false
                         }
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: contentHeight
-                            model: modeCombo.delegateModel
-                            currentIndex: modeCombo.currentIndex
-                            delegate: ItemDelegate {
-                                width: parent.width; height: 36
-                                background: Rectangle {
-                                    radius: 6
-                                    color: modeCombo.currentIndex === index
-                                           ? Qt.rgba(102/255,126/255,234/255, 0.2)
-                                           : "transparent"
-                                }
-                                contentItem: Text {
-                                    leftPadding: 12
-                                    verticalAlignment: Text.AlignVCenter
-                                    text: modelData
-                                    color: cText; font.pixelSize: 13
+                    }
+                }
+            }
+
+            Rectangle {
+                id: controlPane
+                Layout.preferredWidth: 340; Layout.fillHeight: true; radius: 12
+                color: cCardBg; border.color: cCardBorder; border.width: 1
+                DropShadow {
+                    anchors.fill: parent; source: parent
+                    horizontalOffset: 0; verticalOffset: 0
+                    color: cGlowSoft; radius: 20; samples: 24; transparentBorder: true
+                }
+                ColumnLayout {
+                    anchors.fill: parent; anchors.margins: 20; spacing: 12
+
+                    Text { text: "控制中心"; font.pixelSize: 14; font.weight: Font.Bold; color: cTextWhite }
+                    Rectangle {
+                        Layout.fillWidth: true; height: 1
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "transparent" }
+                            GradientStop { position: 0.5; color: Qt.rgba(0/255,242/255,254/255,0.15) }
+                            GradientStop { position: 1.0; color: "transparent" }
+                        }
+                    }
+
+                    Text { text: "作业模式选择"; font.pixelSize: 11; color: cTextSec }
+
+                    Rectangle {
+                        Layout.fillWidth: true; Layout.preferredHeight: 38; radius: 8
+                        color: Qt.rgba(0/255,0/255,0/255,0.25)
+                        border.color: Qt.rgba(0/255,242/255,254/255,0.12); border.width: 1
+                        ComboBox {
+                            id: modeCombo; anchors.fill: parent; anchors.margins: 1
+                            model: ["螺丝", "螺母垫片", "其他"]; currentIndex: 0
+                            background: Item {}
+                            contentItem: Text { leftPadding: 12; verticalAlignment: Text.AlignVCenter; text: modeCombo.displayText; font.pixelSize: 13; color: cTextWhite }
+                            indicator: Text { anchors.right: parent.right; anchors.rightMargin: 12; anchors.verticalCenter: parent.verticalCenter; text: "▼"; font.pixelSize: 10; color: cTextSec }
+                            popup: Popup {
+                                y: parent.height + 4; width: parent.width; padding: 4
+                                background: Rectangle { radius: 8; color: "#0F1A2E"; border.color: Qt.rgba(0/255,242/255,254/255,0.15); border.width: 1 }
+                                contentItem: ListView {
+                                    clip: true; implicitHeight: contentHeight
+                                    model: modeCombo.delegateModel; currentIndex: modeCombo.currentIndex
+                                    delegate: ItemDelegate {
+                                        width: parent.width; height: 34
+                                        background: Rectangle { radius: 6; color: modeCombo.currentIndex === index ? Qt.rgba(0/255,242/255,254/255,0.12) : "transparent" }
+                                        contentItem: Text { leftPadding: 12; verticalAlignment: Text.AlignVCenter; text: modelData; color: cTextWhite; font.pixelSize: 12 }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-
-                // ── 2. 系统状态卡 ────────────────
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 74
-                    radius: 12
-                    color: Qt.rgba(15/255, 17/255, 26/255, 0.4)
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 6
-
-                        Row {
-                            spacing: 8
-                            Rectangle {
-                                width: 6; height: 6; radius: 3
-                                color: backend.statusColor
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-                            Text {
-                                text: backend.statusText
-                                font.pixelSize: 14
-                                font.weight: Font.Bold
-                                color: cText
-                            }
-                        }
-                        Text {
-                            text: "当前源: " + backend.currentFile
-                            font.pixelSize: 12; color: cTextSec
-                        }
-                    }
-                }
-
-                // ── 3. AI 检测结果卡（预留） ────
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 74
-                    radius: 12
-                    color: Qt.rgba(15/255, 17/255, 26/255, 0.4)
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 6
-
-                        Row {
-                            spacing: 6
-                            Text {
-                                text: "●  AI"
-                                font.pixelSize: 12; font.weight: Font.Bold
-                                color: cAccent1
-                            }
-                            Text {
-                                text: "检测结果 (预留)"
-                                font.pixelSize: 11; color: cTextSec
-                            }
-                        }
-                        Row {
-                            spacing: 24
-                            Text {
-                                text: "标签: " + backend.aiResultLabel
-                                font.pixelSize: 13
-                                color: backend.aiResultLabel !== "--"
-                                       ? cText : cTextSec
-                            }
-                            Text {
-                                text: "置信度: " + (backend.aiConfidence > 0
-                                      ? (backend.aiConfidence * 100).toFixed(1) + "%"
-                                      : "--")
-                                font.pixelSize: 13
-                                color: backend.aiConfidence > 0
-                                       ? cText : cTextSec
-                            }
-                        }
-                    }
-                }
-
-                // ── 4. 测量值卡（三列：直径/长/宽） ──
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 96
-                    radius: 12
-                    color: Qt.rgba(15/255, 17/255, 26/255, 0.4)
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 6
-
-                        // 直径
-                        Item {
-                            Layout.fillWidth: true; Layout.fillHeight: true
-                            ColumnLayout {
-                                anchors.centerIn: parent; spacing: 2
-                                Text { text: "直径"; font.pixelSize: 10
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                                Text {
-                                    text: backend.measuredDiameter > 0
-                                          ? backend.measuredDiameter.toFixed(2) : "--"
-                                    font.pixelSize: 28; font.weight: Font.Light
-                                    color: backend.measuredDiameter > 0 ? cText : cTextSec
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-                                Text { text: "mm"; font.pixelSize: 11
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillHeight: true; Layout.preferredWidth: 1
-                            color: cBorder
-                        }
-
-                        // ★ 长度（预留）
-                        Item {
-                            Layout.fillWidth: true; Layout.fillHeight: true
-                            ColumnLayout {
-                                anchors.centerIn: parent; spacing: 2
-                                Text { text: "长度"; font.pixelSize: 10
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                                Text {
-                                    text: backend.measuredLength > 0
-                                          ? backend.measuredLength.toFixed(2) : "--"
-                                    font.pixelSize: 28; font.weight: Font.Light
-                                    color: backend.measuredLength > 0 ? cText : cTextSec
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-                                Text { text: "mm"; font.pixelSize: 11
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillHeight: true; Layout.preferredWidth: 1
-                            color: cBorder
-                        }
-
-                        // ★ 宽度（预留）
-                        Item {
-                            Layout.fillWidth: true; Layout.fillHeight: true
-                            ColumnLayout {
-                                anchors.centerIn: parent; spacing: 2
-                                Text { text: "宽度"; font.pixelSize: 10
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                                Text {
-                                    text: backend.measuredWidth > 0
-                                          ? backend.measuredWidth.toFixed(2) : "--"
-                                    font.pixelSize: 28; font.weight: Font.Light
-                                    color: backend.measuredWidth > 0 ? cText : cTextSec
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-                                Text { text: "mm"; font.pixelSize: 11
-                                    color: cTextSec
-                                    Layout.alignment: Qt.AlignHCenter }
-                            }
-                        }
-                    }
-                }
-
-                // ── 弹性撑开 ──────────────────────
-                Item { Layout.fillHeight: true }
-
-                // ── 5. 按钮组 ─────────────────────
-
-                // 开始分析（渐变主按钮 + 辉光）
-                Rectangle {
-                    id: btnAnalyze
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 56
-                    radius: 14
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: cAccent1 }
-                        GradientStop { position: 1.0; color: cAccent2 }
                     }
 
                     Rectangle {
-                        z: -1
-                        anchors.centerIn: parent
-                        width: parent.width + 16; height: parent.height + 16
-                        radius: 22
-                        color: Qt.rgba(102/255, 126/255, 234/255, 0.12)
+                        id: statusCard
+                        Layout.fillWidth: true; Layout.preferredHeight: 70; radius: 10
+                        color: Qt.rgba(0/255,0/255,0/255,0.2)
+                        border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                        DropShadow {
+                            anchors.fill: statusCard; source: statusCard
+                            horizontalOffset: 0; verticalOffset: 0
+                            color: Qt.rgba(0/255,242/255,254/255,0.06)
+                            radius: 8; samples: 16; transparentBorder: true
+                        }
+                        ColumnLayout { anchors.fill: parent; anchors.margins: 14; spacing: 4
+                            Row { spacing: 8
+                                Rectangle { id: statusDot; width: 8; height: 8; radius: 4; anchors.verticalCenter: parent.verticalCenter; color: backend.statusColor
+                                    SequentialAnimation on opacity { loops: Animation.Infinite; running: backend.statusText === "分析中..."
+                                        PropertyAnimation { to: 0.2; duration: 600 }
+                                        PropertyAnimation { to: 1.0; duration: 600 }
+                                    }
+                                }
+                                Text { anchors.verticalCenter: parent.verticalCenter; text: backend.statusText; font.pixelSize: 14; font.weight: Font.Bold; color: cTextWhite }
+                            }
+                            Text { text: "当前源: " + backend.currentFile; font.pixelSize: 11; color: cTextSec }
+                        }
                     }
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "开始分析"
-                        color: "#ffffff"; font.pixelSize: 15; font.weight: Font.Bold
+                    Rectangle {
+                        id: aiCard
+                        Layout.fillWidth: true; Layout.preferredHeight: 68; radius: 10
+                        color: Qt.rgba(0/255,0/255,0/255,0.2)
+                        border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                        DropShadow {
+                            anchors.fill: aiCard; source: aiCard
+                            horizontalOffset: 0; verticalOffset: 0
+                            color: Qt.rgba(0/255,242/255,254/255,0.06)
+                            radius: 8; samples: 16; transparentBorder: true
+                        }
+                        ColumnLayout { anchors.fill: parent; anchors.margins: 14; spacing: 4
+                            Row { spacing: 6
+                                Text { text: "●"; font.pixelSize: 12; color: cCyan }
+                                Text { text: "AI 检测结果 (预留)"; font.pixelSize: 11; color: cTextSec }
+                            }
+                            Row { spacing: 16
+                                Text { text: "标签: " + backend.aiResultLabel; font.pixelSize: 12; color: backend.aiResultLabel !== "--" ? cTextWhite : cTextSec }
+                                Text { text: "置信: " + (backend.aiConfidence > 0 ? (backend.aiConfidence * 100).toFixed(1) + "%" : "--"); font.pixelSize: 12; color: backend.aiConfidence > 0 ? cGreen : cTextSec }
+                                Rectangle { width: 1; height: 14; anchors.verticalCenter: parent.verticalCenter; color: Qt.rgba(255/255,255/255,255/255,0.06) }
+                                Text { text: "模型: --"; font.pixelSize: 12; color: cTextSec }
+                            }
+                        }
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: backend.startAnalysis()
-                        onPressed: parent.opacity = 0.85
-                        onReleased: parent.opacity = 1.0
-                        onEntered: parent.scale = 1.02
-                        onExited: parent.scale = 1.0
-                    }
-                    Behavior on scale { NumberAnimation { duration: 100 } }
-                    Behavior on opacity { NumberAnimation { duration: 80 } }
-                }
-
-                // 下一个样本
-                Rectangle {
-                    id: btnNext
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 56
-                    radius: 14
-                    color: Qt.rgba(255/255,255/255,255/255, 0.03)
-                    border.color: cBorder; border.width: 1
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "下一个样本"
-                        color: cText; font.pixelSize: 15
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: backend.nextSample()
-                        onPressed: parent.color = Qt.rgba(255/255,255/255,255/255, 0.08)
-                        onReleased: parent.color = Qt.rgba(255/255,255/255,255/255, 0.03)
-                        onEntered: parent.border.color = Qt.rgba(255/255,255/255,255/255, 0.2)
-                        onExited: parent.border.color = cBorder
-                    }
-                }
-
-                // 下达指令
-                Rectangle {
-                    id: btnCommand
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 56
-                    radius: 14
-                    color: Qt.rgba(255/255,255/255,255/255, 0.03)
-                    border.color: cBorder; border.width: 1
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "下达指令"
-                        color: cDanger; font.pixelSize: 15
+                    Rectangle {
+                        id: measCard
+                        Layout.fillWidth: true; Layout.preferredHeight: 92; radius: 10
+                        color: Qt.rgba(0/255,0/255,0/255,0.2)
+                        border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                        DropShadow {
+                            anchors.fill: measCard; source: measCard
+                            horizontalOffset: 0; verticalOffset: 0
+                            color: Qt.rgba(0/255,242/255,254/255,0.06)
+                            radius: 8; samples: 16; transparentBorder: true
+                        }
+                        RowLayout { anchors.fill: parent; anchors.margins: 10; spacing: 4
+                            Item { Layout.fillWidth: true; Layout.fillHeight: true
+                                ColumnLayout { anchors.centerIn: parent; spacing: 1
+                                    Text { text: "直径"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: backend.measuredDiameter > 0 ? backend.measuredDiameter.toFixed(2) : "--"; font.pixelSize: 30; font.weight: Font.Light; color: backend.measuredDiameter > 0 ? cCyan : cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "mm"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                            } }
+                            Rectangle { Layout.fillHeight: true; Layout.preferredWidth: 1; color: Qt.rgba(0/255,242/255,254/255,0.08) }
+                            Item { Layout.fillWidth: true; Layout.fillHeight: true
+                                ColumnLayout { anchors.centerIn: parent; spacing: 1
+                                    Text { text: "长度"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: backend.measuredLength > 0 ? backend.measuredLength.toFixed(2) : "--"; font.pixelSize: 30; font.weight: Font.Light; color: backend.measuredLength > 0 ? cGreen : cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "mm"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                            } }
+                            Rectangle { Layout.fillHeight: true; Layout.preferredWidth: 1; color: Qt.rgba(0/255,242/255,254/255,0.08) }
+                            Item { Layout.fillWidth: true; Layout.fillHeight: true
+                                ColumnLayout { anchors.centerIn: parent; spacing: 1
+                                    Text { text: "宽度"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: backend.measuredWidth > 0 ? backend.measuredWidth.toFixed(2) : "--"; font.pixelSize: 30; font.weight: Font.Light; color: backend.measuredWidth > 0 ? cGreen : cTextSec; Layout.alignment: Qt.AlignHCenter }
+                                    Text { text: "mm"; font.pixelSize: 10; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
+                            } }
+                        }
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: backend.sendCommand()
-                        onPressed: parent.color = Qt.rgba(255/255,118/255,117/255, 0.08)
-                        onReleased: parent.color = Qt.rgba(255/255,255/255,255/255, 0.03)
-                        onEntered: parent.border.color = Qt.rgba(255/255,118/255,117/255, 0.3)
-                        onExited: parent.border.color = cBorder
+                    Item { Layout.fillHeight: true }
+
+                    Rectangle {
+                        id: btnAnalyze; property bool hovered: false
+                        Layout.fillWidth: true; Layout.preferredHeight: 52; radius: 10
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "#00C8FF" }
+                            GradientStop { position: 1.0; color: "#0099FF" }
+                        }
+                        DropShadow {
+                            anchors.fill: btnAnalyze; source: btnAnalyze
+                            horizontalOffset: 0; verticalOffset: 0
+                            color: Qt.rgba(0/255,200/255,255/255,btnAnalyze.hovered ? 0.5 : 0.2)
+                            radius: btnAnalyze.hovered ? 24 : 16; samples: 28; transparentBorder: true
+                            Behavior on color { ColorAnimation { duration: 200 } }
+                            Behavior on radius { NumberAnimation { duration: 200 } }
+                        }
+                        Text { anchors.centerIn: parent; text: "开始分析"; color: "#ffffff"; font.pixelSize: 15; font.weight: Font.Bold }
+                        Rectangle { anchors.fill: parent; radius: parent.radius; color: Qt.rgba(255/255,255/255,255/255,btnAnalyze.hovered ? 0.08 : 0); Behavior on color { ColorAnimation { duration: 200 } } }
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: backend.startAnalysis()
+                            onEntered: btnAnalyze.hovered = true; onExited: btnAnalyze.hovered = false
+                            onPressed: parent.opacity = 0.85; onReleased: parent.opacity = 1.0
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+                    Rectangle {
+                        id: btnNext; property bool hovered: false
+                        Layout.fillWidth: true; Layout.preferredHeight: 48; radius: 8
+                        color: Qt.rgba(255/255,255/255,255/255,0.02)
+                        border.color: Qt.rgba(0/255,242/255,254/255,btnNext.hovered ? 0.35 : 0.12); border.width: 1
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        Text { anchors.centerIn: parent; text: "下一个样本"; font.pixelSize: 14; color: btnNext.hovered ? cTextWhite : cTextSec; Behavior on color { ColorAnimation { duration: 200 } } }
+                        Rectangle { anchors.fill: parent; radius: parent.radius; color: Qt.rgba(0/255,242/255,254/255,btnNext.hovered ? 0.06 : 0); Behavior on color { ColorAnimation { duration: 200 } } }
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: backend.nextSample()
+                            onEntered: btnNext.hovered = true; onExited: btnNext.hovered = false
+                            onPressed: parent.opacity = 0.8; onReleased: parent.opacity = 1.0
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
+                    }
+                    Rectangle {
+                        id: btnCommand; property bool hovered: false
+                        Layout.fillWidth: true; Layout.preferredHeight: 48; radius: 8
+                        color: Qt.rgba(255/255,255/255,255/255,0.02)
+                        border.color: Qt.rgba(255/255,215/255,0/255,btnCommand.hovered ? 0.35 : 0.10); border.width: 1
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        Text { anchors.centerIn: parent; text: "下达指令"; font.pixelSize: 14; color: btnCommand.hovered ? "#FFD700" : Qt.rgba(255/255,215/255,0/255,0.6); Behavior on color { ColorAnimation { duration: 200 } } }
+                        Rectangle { anchors.fill: parent; radius: parent.radius; color: Qt.rgba(255/255,215/255,0/255,btnCommand.hovered ? 0.06 : 0); Behavior on color { ColorAnimation { duration: 200 } } }
+                        MouseArea {
+                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: backend.sendCommand()
+                            onEntered: btnCommand.hovered = true; onExited: btnCommand.hovered = false
+                            onPressed: parent.opacity = 0.8; onReleased: parent.opacity = 1.0
+                        }
+                        Behavior on opacity { NumberAnimation { duration: 80 } }
                     }
                 }
             }
