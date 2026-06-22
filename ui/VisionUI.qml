@@ -138,19 +138,19 @@ ApplicationWindow {
                                 anchors.fill: parent; radius: 10
                                 color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.12) : "transparent"
                                 border.color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.3) : "transparent"; border.width: 1
-                                Rectangle { x: 8; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                Rectangle { x: 12; y: 10; width: 4; height: 20; radius: 1; color: cCyan
                                     property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
                                     SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
                                         PauseAnimation { duration: 0 }
                                         NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
                                         NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
-                                Rectangle { x: 14; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                Rectangle { x: 18; y: 10; width: 4; height: 20; radius: 1; color: cCyan
                                     property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
                                     SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
                                         PauseAnimation { duration: 400 }
                                         NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
                                         NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
-                                Rectangle { x: 20; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                Rectangle { x: 24; y: 10; width: 4; height: 20; radius: 1; color: cCyan
                                     property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
                                     SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
                                         PauseAnimation { duration: 800 }
