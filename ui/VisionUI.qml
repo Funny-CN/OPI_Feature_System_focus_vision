@@ -95,102 +95,102 @@ ApplicationWindow {
             }
         }
     }
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent; anchors.margins: 20; spacing: 14
-        Item {
-            Layout.preferredWidth: 60; Layout.fillHeight: true
-            Rectangle {
-                anchors.fill: parent; radius: cRadius
-                color: Qt.rgba(15/255,21/255,36/255,0.45)
-                border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
-                ColumnLayout {
-                    anchors.centerIn: parent; spacing: 18; anchors.verticalCenterOffset: -30
-                    Item {
-                        Layout.preferredWidth: 40; Layout.preferredHeight: 40
-                        Rectangle {
-                            anchors.fill: parent; radius: 10
-                            color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.12) : "transparent"
-                            border.color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.3) : "transparent"; border.width: 1
-                            Rectangle { x: 8; y: 10; width: 4; height: 20; radius: 1; color: cCyan
-                                property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
-                                SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
-                                    PauseAnimation { duration: 0 }
-                                    NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
-                                    NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
-                            Rectangle { x: 14; y: 10; width: 4; height: 20; radius: 1; color: cCyan
-                                property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
-                                SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
-                                    PauseAnimation { duration: 400 }
-                                    NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
-                                    NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
-                            Rectangle { x: 20; y: 10; width: 4; height: 20; radius: 1; color: cCyan
-                                property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
-                                SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
-                                    PauseAnimation { duration: 800 }
-                                    NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
-                                    NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
-                        }
-                        MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 0 }
+        Rectangle {
+            Layout.fillWidth: true; Layout.preferredHeight: 48; radius: cRadiusSm
+            color: Qt.rgba(20/255,28/255,47/255,0.25)
+            border.color: Qt.rgba(180/255,80/255,255/255,0.12); border.width: 1
+            RowLayout {
+                anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
+                Row { spacing: 10
+                    Rectangle { width: 8; height: 8; radius: 4; color: cCyan; anchors.verticalCenter: parent.verticalCenter
+                        SequentialAnimation on opacity { loops: Animation.Infinite
+                            PropertyAnimation { to: 0.3; duration: 1200 }
+                            PropertyAnimation { to: 1.0; duration: 1200 } } }
+                    Text { text: "VisionFlow"; font.pixelSize: 15; font.weight: Font.Bold; color: cCyan }
+                    Text { text: "| 视觉智能筛选系统"; font.pixelSize: 15; font.weight: Font.Bold; color: cTextWhite }
+                }
+                Item { Layout.fillWidth: true }
+                Row { spacing: 16
+                    Row { spacing: 6
+                        Rectangle { width: 6; height: 6; radius: 3; color: cGreen; anchors.verticalCenter: parent.verticalCenter }
+                        Text { text: "系统正常"; font.pixelSize: 12; color: cTextSec }
                     }
-                    Item {
-                        Layout.preferredWidth: 40; Layout.preferredHeight: 40
-                        Rectangle {
-                            anchors.fill: parent; radius: 10
-                            color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.15) : "transparent"
-                            border.color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.35) : "transparent"; border.width: 1
-                            Repeater {
-                                model: 3
-                                Rectangle {
-                                    x: 8; y: 8; width: 24; height: 24; radius: 12
-                                    color: "transparent"; border.color: Qt.rgba(255/255,107/255,157/255,0.4); border.width: 1
-                                    property real s: 1.0; property real o: 0.5; scale: s; opacity: o
-                                    SequentialAnimation on s { running: currentPage === 1; loops: Animation.Infinite
-                                        PauseAnimation { duration: index * 500 }
-                                        NumberAnimation { from: 1.0; to: 2.2; duration: 1600; easing.type: Easing.OutCubic }
-                                        NumberAnimation { from: 2.2; to: 1.0; duration: 0 } }
-                                    SequentialAnimation on o { running: currentPage === 1; loops: Animation.Infinite
-                                        PauseAnimation { duration: index * 500 }
-                                        NumberAnimation { from: 0.5; to: 0.0; duration: 1600; easing.type: Easing.OutCubic }
-                                        NumberAnimation { from: 0.0; to: 0.5; duration: 0 } }
-                                }
-                            }
-                            Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.7) : cTextSec }
-                            Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
-                            Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
-                            Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
-                            Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: -45 }
-                            Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: 45 }
-                            Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim }
-                        }
-                        MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 1 }
-                    }
+                    Rectangle { width: 1; height: 18; color: Qt.rgba(255/255,255/255,255/255,0.06) }
+                    Text { text: "帧率: 10fps"; font.pixelSize: 12; color: cTextSec }
                 }
             }
         }
-        ColumnLayout {
+        RowLayout {
             Layout.fillWidth: true; Layout.fillHeight: true; spacing: 14
-            Rectangle {
-                Layout.fillWidth: true; Layout.preferredHeight: 48; radius: cRadiusSm
-                color: Qt.rgba(20/255,28/255,47/255,0.25)
-                border.color: Qt.rgba(180/255,80/255,255/255,0.12); border.width: 1
-                RowLayout {
-                    anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
-                    Row { spacing: 10
-                        Rectangle { width: 8; height: 8; radius: 4; color: cCyan; anchors.verticalCenter: parent.verticalCenter
-                            SequentialAnimation on opacity { loops: Animation.Infinite
-                                PropertyAnimation { to: 0.3; duration: 1200 }
-                                PropertyAnimation { to: 1.0; duration: 1200 } } }
-                        Text { text: "VisionFlow"; font.pixelSize: 15; font.weight: Font.Bold; color: cCyan }
-                        Text { text: "| 视觉智能筛选系统"; font.pixelSize: 15; font.weight: Font.Bold; color: cTextWhite }
-                    }
-                    Item { Layout.fillWidth: true }
-                    Row { spacing: 16
-                        Row { spacing: 6
-                            Rectangle { width: 6; height: 6; radius: 3; color: cGreen; anchors.verticalCenter: parent.verticalCenter }
-                            Text { text: "系统正常"; font.pixelSize: 12; color: cTextSec }
+            Item {
+                Layout.preferredWidth: 60; Layout.fillHeight: true
+                Rectangle {
+                    anchors.fill: parent; radius: cRadius
+                    color: Qt.rgba(15/255,21/255,36/255,0.45)
+                    border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
+                    ColumnLayout {
+                        anchors.centerIn: parent; spacing: 18; anchors.verticalCenterOffset: -30
+                        Item {
+                            Layout.preferredWidth: 40; Layout.preferredHeight: 40
+                            Rectangle {
+                                anchors.fill: parent; radius: 10
+                                color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.12) : "transparent"
+                                border.color: currentPage === 0 ? Qt.rgba(0/255,242/255,254/255,0.3) : "transparent"; border.width: 1
+                                Rectangle { x: 8; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                    property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
+                                    SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
+                                        PauseAnimation { duration: 0 }
+                                        NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
+                                        NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
+                                Rectangle { x: 14; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                    property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
+                                    SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
+                                        PauseAnimation { duration: 400 }
+                                        NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
+                                        NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
+                                Rectangle { x: 20; y: 10; width: 4; height: 20; radius: 1; color: cCyan
+                                    property real v: 1.0; opacity: currentPage === 0 ? v : 0.25
+                                    SequentialAnimation on v { running: currentPage === 0; loops: Animation.Infinite
+                                        PauseAnimation { duration: 800 }
+                                        NumberAnimation { from: 0.25; to: 1.0; duration: 600; easing.type: Easing.InOutSine }
+                                        NumberAnimation { from: 1.0; to: 0.25; duration: 600; easing.type: Easing.InOutSine } } }
+                            }
+                            MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 0 }
                         }
-                        Rectangle { width: 1; height: 18; color: Qt.rgba(255/255,255/255,255/255,0.06) }
-                        Text { text: "帧率: 10fps"; font.pixelSize: 12; color: cTextSec }
+                        Item {
+                            Layout.preferredWidth: 40; Layout.preferredHeight: 40
+                            Rectangle {
+                                anchors.fill: parent; radius: 10
+                                color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.15) : "transparent"
+                                border.color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.35) : "transparent"; border.width: 1
+                                Repeater {
+                                    model: 3
+                                    Rectangle {
+                                        x: 8; y: 8; width: 24; height: 24; radius: 12
+                                        color: "transparent"; border.color: Qt.rgba(255/255,107/255,157/255,0.4); border.width: 1
+                                        property real s: 1.0; property real o: 0.5; scale: s; opacity: o
+                                        SequentialAnimation on s { running: currentPage === 1; loops: Animation.Infinite
+                                            PauseAnimation { duration: index * 500 }
+                                            NumberAnimation { from: 1.0; to: 2.2; duration: 1600; easing.type: Easing.OutCubic }
+                                            NumberAnimation { from: 2.2; to: 1.0; duration: 0 } }
+                                        SequentialAnimation on o { running: currentPage === 1; loops: Animation.Infinite
+                                            PauseAnimation { duration: index * 500 }
+                                            NumberAnimation { from: 0.5; to: 0.0; duration: 1600; easing.type: Easing.OutCubic }
+                                            NumberAnimation { from: 0.0; to: 0.5; duration: 0 } }
+                                    }
+                                }
+                                Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.7) : cTextSec }
+                                Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                                Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                                Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                                Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: -45 }
+                                Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: 45 }
+                                Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim }
+                            }
+                            MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 1 }
+                        }
                     }
                 }
             }
