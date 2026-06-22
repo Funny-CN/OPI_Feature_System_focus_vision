@@ -28,6 +28,11 @@ if _project_root not in sys.path:
 
 from core.detector import ScrewDetector
 from ui.vision_backend import VisionBackend, FrameProvider
+from PySide6.QtQuickControls2 import QQuickStyle
+
+# Use Basic style for ComboBox customization
+QQuickStyle.setStyle("Basic")
+
 
 
 def main():

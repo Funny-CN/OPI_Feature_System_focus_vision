@@ -21,6 +21,7 @@ VisionBackend: PySide6 后端模块，连接核心检测器与 QML UI。
 """
 
 import os
+import json
 import cv2
 import numpy as np
 from typing import Optional, List
@@ -82,6 +83,7 @@ class VisionBackend(QObject):
     statusUpdated = Signal()             # 状态文本/颜色变更
     fileUpdated = Signal()               # 当前文件名变更
     frameCounterChanged = Signal()       # 帧计数器递增
+    detectionCountChanged = Signal()     # 检测次数变更
 
     def __init__(self, detector, frame_provider: FrameProvider, parent=None):
         super().__init__(parent)
@@ -102,6 +104,8 @@ class VisionBackend(QObject):
         self._status_color = "#4FC3F7"
         self._current_file = ""
         self._frame_counter = 0
+        self._detection_count = 0
+        self._tolerance = self._load_tolerance()
 
         # 样本管理
         self._sample_dir = "samples"
@@ -118,6 +122,7 @@ class VisionBackend(QObject):
     def start(self):
         """程序入口：扫描样本、显示首帧、启动帧循环"""
         self._scan_samples()
+        self._tolerance = self._load_tolerance()
         frame = self._grab_frame()
         if frame is not None:
             self._refresh_display(frame)
@@ -201,6 +206,8 @@ class VisionBackend(QObject):
 
         if diameters:
             self._diameter = diameters[0]
+            self._detection_count += 1
+            self.detectionCountChanged.emit()
             # ★ 预留: self._length = self._detector.measure_length(frame)
             # ★ 预留: self._width  = self._detector.measure_width(frame)
         else:
@@ -214,6 +221,17 @@ class VisionBackend(QObject):
             self._set_status("分析失败", "#FF7675")
 
         self.measurementUpdated.emit()
+
+    def _load_tolerance(self) -> float:
+        """从 config.json 读取测量公差"""
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+        try:
+            with open(config_path, "r") as f:
+                cfg = json.load(f)
+            return cfg.get("target_standard", {}).get("tolerance", {}).get("diameter_mm", 0.5)
+        except Exception as e:
+            print(f"[BACKEND] 读取 config.json 失败: {e}")
+            return 0.5
 
     def _set_status(self, text: str, color: str):
         self._status_text = text
@@ -262,6 +280,14 @@ class VisionBackend(QObject):
     def measuredWidth(self) -> float:
         """★ 预留：长宽测量接入后自动生效"""
         return self._width
+
+    @Property(int, notify=detectionCountChanged)
+    def detectionCount(self) -> int:
+        return self._detection_count
+
+    @Property(float, notify=measurementUpdated)
+    def tolerance(self) -> float:
+        return self._tolerance
 
     @Property(str, notify=statusUpdated)
     def statusText(self) -> str:
