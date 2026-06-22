@@ -66,6 +66,7 @@ def main():
 
     # ── 启动后端帧循环 ──────────────────────────────
     backend.start()
+    app.aboutToQuit.connect(backend.stop)
 
     # ── 进入 Qt 事件循环 ────────────────────────────
     sys.exit(app.exec())

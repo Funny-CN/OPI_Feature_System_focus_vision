@@ -128,13 +128,13 @@ ApplicationWindow {
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40
                         Rectangle {
                             anchors.fill: parent; radius: 10
-                            color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.15) : "transparent"
-                            border.color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.35) : "transparent"; border.width: 1
+                            color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.15) : "transparent"
+                            border.color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.35) : "transparent"; border.width: 1
                             Repeater {
                                 model: 3
                                 Rectangle {
                                     x: 8; y: 8; width: 24; height: 24; radius: 12
-                                    color: "transparent"; border.color: Qt.rgba(179/255,136/255,255/255,0.4); border.width: 1
+                                    color: "transparent"; border.color: Qt.rgba(255/255,64/255,129/255,0.4); border.width: 1
                                     property real s: 1.0; property real o: 0.5; scale: s; opacity: o
                                     SequentialAnimation on s { running: currentPage === 1; loops: Animation.Infinite
                                         PauseAnimation { duration: index * 500 }
@@ -146,13 +146,13 @@ ApplicationWindow {
                                         NumberAnimation { from: 0.0; to: 0.5; duration: 0 } }
                                 }
                             }
-                            Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.7) : cTextSec }
-                            Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.55) : cTextDim }
-                            Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.55) : cTextDim }
-                            Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.55) : cTextDim }
-                            Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.25) : cTextDim; rotation: -45 }
-                            Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.25) : cTextDim; rotation: 45 }
-                            Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(179/255,136/255,255/255,0.25) : cTextDim }
+                            Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.7) : cTextSec }
+                            Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
+                            Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
+                            Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
+                            Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim; rotation: -45 }
+                            Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim; rotation: 45 }
+                            Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim }
                         }
                         MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 1 }
                     }

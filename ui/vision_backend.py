@@ -128,6 +128,10 @@ class VisionBackend(QObject):
             self._refresh_display(frame)
         self._timer.start()
 
+    def stop(self):
+        """停止帧循环（窗口关闭时调用）"""
+        self._timer.stop()
+
     # ── 画面源管理 ──────────────────────────────────
 
     def _scan_samples(self):
