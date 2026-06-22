@@ -9,18 +9,18 @@ ApplicationWindow {
     minimumWidth: 1024; minimumHeight: 680
     title: "VisionFlow | 视觉智能筛选系统"
 
-    readonly property color cBgStart:     "#070B14"
-    readonly property color cBgEnd:       "#0F1A2E"
-    readonly property color cCardBg:      Qt.rgba(20/255, 28/255, 47/255, 0.65)
-    readonly property color cCardBorder:  Qt.rgba(0/255, 242/255, 254/255, 0.20)
+    readonly property color cBgStart:     "#0B1426"
+    readonly property color cBgEnd:       "#1A1F3A"
+    readonly property color cCardBg:      Qt.rgba(20/255, 28/255, 47/255, 0.35)
+    readonly property color cCardBorder:  Qt.rgba(180/255, 80/255, 255/255, 0.25)
     readonly property color cCyan:        "#00F2FE"
     readonly property color cGreen:       "#00FFCC"
-    readonly property color cGold:        "#FFD700"
+    readonly property color cGold:        "#F5A623"
     readonly property color cTextWhite:   "#FFFFFF"
     readonly property color cTextSec:     Qt.rgba(255/255, 255/255, 255/255, 0.55)
     readonly property color cTextDim:     Qt.rgba(255/255, 255/255, 255/255, 0.3)
-    readonly property color cGlowSoft:    Qt.rgba(0/255, 242/255, 254/255, 0.12)
-    readonly property color cGlowPurple:  Qt.rgba(118/255, 75/255, 162/255, 0.3)
+    readonly property color cGlowSoft:    Qt.rgba(180/255, 80/255, 255/255, 0.15)
+    readonly property color cGlowPurple:  Qt.rgba(180/255, 80/255, 255/255, 0.25)
     readonly property color cPurple:      Qt.rgba(118/255, 75/255, 162/255, 1)
     readonly property int   cRadius:      12
     readonly property int   cRadiusSm:    8
@@ -34,7 +34,7 @@ ApplicationWindow {
         }
     }
     Canvas {
-        anchors.fill: parent; opacity: 0.035
+        anchors.fill: parent; opacity: 0.06
         onPaint: {
             var ctx = getContext("2d");
             ctx.strokeStyle = Qt.rgba(0/255,242/255,254/255,1);
@@ -54,35 +54,43 @@ ApplicationWindow {
             var ctx = getContext("2d");
             var w = width, h = height;
             ctx.clearRect(0, 0, w, h);
-            var cx1 = w * (0.08 + 0.18 * (0.5 + 0.5 * Math.sin(p1)));
-            var cy1 = h * (0.08 + 0.18 * (0.5 + 0.5 * Math.cos(p1 * 0.8)));
+            var cx1 = w * (0.05 + 0.85 * (0.5 + 0.5 * Math.sin(p1)));
+            var cy1 = h * (0.10 + 0.75 * (0.5 + 0.5 * Math.cos(p1 * 0.8)));
             var g1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, w * 0.38);
-            g1.addColorStop(0, "rgba(0, 242, 254, 0.13)");
-            g1.addColorStop(0.4, "rgba(0, 242, 254, 0.05)");
-            g1.addColorStop(0.7, "rgba(0, 242, 254, 0.01)");
+            g1.addColorStop(0, "rgba(0, 242, 254, 0.60)");
+            g1.addColorStop(0.4, "rgba(0, 242, 254, 0.25)");
+            g1.addColorStop(0.7, "rgba(0, 242, 254, 0.05)");
             g1.addColorStop(1, "rgba(0, 242, 254, 0)");
             ctx.fillStyle = g1; ctx.fillRect(0, 0, w, h);
-            var cx2 = w * (0.55 + 0.18 * (0.5 + 0.5 * Math.sin(p2)));
-            var cy2 = h * (0.55 + 0.18 * (0.5 + 0.5 * Math.cos(p2 * 0.9)));
+            var cx2 = w * (0.10 + 0.75 * (0.5 + 0.5 * Math.sin(p2)));
+            var cy2 = h * (0.05 + 0.85 * (0.5 + 0.5 * Math.cos(p2 * 0.9)));
             var g2 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, w * 0.38);
-            g2.addColorStop(0, "rgba(118, 75, 162, 0.11)");
-            g2.addColorStop(0.4, "rgba(118, 75, 162, 0.04)");
-            g2.addColorStop(0.7, "rgba(118, 75, 162, 0.01)");
-            g2.addColorStop(1, "rgba(118, 75, 162, 0)");
+            g2.addColorStop(0, "rgba(255, 94, 77, 0.55)");
+            g2.addColorStop(0.4, "rgba(255, 94, 77, 0.22)");
+            g2.addColorStop(0.7, "rgba(255, 94, 77, 0.07)");
+            g2.addColorStop(1, "rgba(255, 94, 77, 0)");
             ctx.fillStyle = g2; ctx.fillRect(0, 0, w, h);
-            var cx3 = w * (0.40 + 0.15 * (0.5 + 0.5 * Math.sin(p3)));
-            var cy3 = h * (0.12 + 0.15 * (0.5 + 0.5 * Math.cos(p3 * 1.1)));
+            var cx3 = w * (0.05 + 0.85 * (0.5 + 0.5 * Math.sin(p3)));
+            var cy3 = h * (0.10 + 0.80 * (0.5 + 0.5 * Math.cos(p3 * 1.1)));
             var g3 = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, w * 0.32);
-            g3.addColorStop(0, "rgba(102, 126, 234, 0.09)");
-            g3.addColorStop(0.4, "rgba(102, 126, 234, 0.03)");
-            g3.addColorStop(0.7, "rgba(102, 126, 234, 0.01)");
+            g3.addColorStop(0, "rgba(255, 184, 108, 0.55)");
+            g3.addColorStop(0.4, "rgba(255, 184, 108, 0.22)");
+            g3.addColorStop(0.7, "rgba(255, 184, 108, 0.06)");
             g3.addColorStop(1, "rgba(102, 126, 234, 0)");
             ctx.fillStyle = g3; ctx.fillRect(0, 0, w, h);
+            // Fixed warm light source — bottom-left
+            var cx4 = w * 0.12;
+            var cy4 = h * 0.82;
+            var g4 = ctx.createRadialGradient(cx4, cy4, 0, cx4, cy4, w * 0.22);
+            g4.addColorStop(0, "rgba(255, 230, 200, 0.32)");
+            g4.addColorStop(0.5, "rgba(255, 230, 200, 0.16)");
+            g4.addColorStop(1, "rgba(255, 230, 200, 0)");
+            ctx.fillStyle = g4; ctx.fillRect(0, 0, w, h);
         }
         Timer {
             interval: 50; running: true; repeat: true
             onTriggered: {
-                glowCanvas.p1 += 0.012; glowCanvas.p2 += 0.010; glowCanvas.p3 += 0.014;
+                glowCanvas.p1 += 0.045; glowCanvas.p2 += 0.045; glowCanvas.p3 += 0.055;
                 glowCanvas.requestPaint();
             }
         }
@@ -93,8 +101,8 @@ ApplicationWindow {
             Layout.preferredWidth: 60; Layout.fillHeight: true
             Rectangle {
                 anchors.fill: parent; radius: cRadius
-                color: Qt.rgba(15/255,21/255,36/255,0.7)
-                border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                color: Qt.rgba(15/255,21/255,36/255,0.45)
+                border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
                 ColumnLayout {
                     anchors.centerIn: parent; spacing: 18; anchors.verticalCenterOffset: -30
                     Item {
@@ -128,13 +136,13 @@ ApplicationWindow {
                         Layout.preferredWidth: 40; Layout.preferredHeight: 40
                         Rectangle {
                             anchors.fill: parent; radius: 10
-                            color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.15) : "transparent"
-                            border.color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.35) : "transparent"; border.width: 1
+                            color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.15) : "transparent"
+                            border.color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.35) : "transparent"; border.width: 1
                             Repeater {
                                 model: 3
                                 Rectangle {
                                     x: 8; y: 8; width: 24; height: 24; radius: 12
-                                    color: "transparent"; border.color: Qt.rgba(255/255,64/255,129/255,0.4); border.width: 1
+                                    color: "transparent"; border.color: Qt.rgba(255/255,107/255,157/255,0.4); border.width: 1
                                     property real s: 1.0; property real o: 0.5; scale: s; opacity: o
                                     SequentialAnimation on s { running: currentPage === 1; loops: Animation.Infinite
                                         PauseAnimation { duration: index * 500 }
@@ -146,13 +154,13 @@ ApplicationWindow {
                                         NumberAnimation { from: 0.0; to: 0.5; duration: 0 } }
                                 }
                             }
-                            Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.7) : cTextSec }
-                            Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
-                            Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
-                            Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.55) : cTextDim }
-                            Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim; rotation: -45 }
-                            Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim; rotation: 45 }
-                            Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,64/255,129/255,0.25) : cTextDim }
+                            Rectangle { x: 14; y: 14; width: 12; height: 12; radius: 6; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.7) : cTextSec }
+                            Rectangle { x: 7; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                            Rectangle { x: 28; y: 7; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                            Rectangle { x: 16; y: 28; width: 5; height: 5; radius: 2.5; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.55) : cTextDim }
+                            Rectangle { x: 10; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: -45 }
+                            Rectangle { x: 24; y: 9; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim; rotation: 45 }
+                            Rectangle { x: 16; y: 20; width: 8; height: 1; color: currentPage === 1 ? Qt.rgba(255/255,107/255,157/255,0.25) : cTextDim }
                         }
                         MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: currentPage = 1 }
                     }
@@ -163,8 +171,8 @@ ApplicationWindow {
             Layout.fillWidth: true; Layout.fillHeight: true; spacing: 14
             Rectangle {
                 Layout.fillWidth: true; Layout.preferredHeight: 48; radius: cRadiusSm
-                color: Qt.rgba(20/255,28/255,47/255,0.4)
-                border.color: Qt.rgba(0/255,242/255,254/255,0.10); border.width: 1
+                color: Qt.rgba(20/255,28/255,47/255,0.25)
+                border.color: Qt.rgba(180/255,80/255,255/255,0.12); border.width: 1
                 RowLayout {
                     anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
                     Row { spacing: 10
@@ -195,7 +203,7 @@ ApplicationWindow {
                         DropShadow { anchors.fill: camPane; source: camPane; horizontalOffset: 0; verticalOffset: 0; color: cGlowSoft; radius: 24; samples: 28; transparentBorder: true }
                         ColumnLayout { anchors.fill: parent; spacing: 0
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 34; color: Qt.rgba(0/255,0/255,0/255,0.25)
+                                Layout.fillWidth: true; Layout.preferredHeight: 34; color: Qt.rgba(0/255,0/255,0/255,0.15)
                                 RowLayout { anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
                                     Rectangle { width: 6; height: 6; radius: 3; color: cCyan }
                                     Text { text: "相机画面"; font.pixelSize: 12; color: cTextSec }
@@ -212,11 +220,25 @@ ApplicationWindow {
                                 }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.fillHeight: true; color: "#080C18"
-                                Image { anchors.fill: parent; anchors.margins: 1; fillMode: Image.PreserveAspectFit; source: "image://camera/live?" + backend.frameCounter; cache: false }
+                                Layout.fillWidth: true; Layout.fillHeight: true; color: "transparent"
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 24
+                                    height: parent.height - 24
+                                    radius: 6
+                                    color: Qt.rgba(0/255, 0/255, 0/255, 0.15)
+                                    border.color: Qt.rgba(180/255, 80/255, 255/255, 0.12)
+                                    border.width: 1
+                                    Image {
+                                        anchors.fill: parent; anchors.margins: 2
+                                        fillMode: Image.PreserveAspectFit
+                                        source: "image://camera/live?" + backend.frameCounter
+                                        cache: false
+                                    }
+                                }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 28; color: Qt.rgba(0/255,0/255,0/255,0.3)
+                                Layout.fillWidth: true; Layout.preferredHeight: 28; color: Qt.rgba(0/255,0/255,0/255,0.18)
                                 RowLayout { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                                     Text { text: "分辨率 1280x720"; font.pixelSize: 10; color: cTextDim }
                                     Item { Layout.fillWidth: true }
@@ -238,12 +260,12 @@ ApplicationWindow {
                             Rectangle { Layout.fillWidth: true; height: 1
                                 gradient: Gradient {
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 0.5; color: Qt.rgba(0/255,242/255,254/255,0.12) }
+                                    GradientStop { position: 0.5; color: Qt.rgba(255/255,255/255,255/255,0.06) }
                                     GradientStop { position: 1.0; color: "transparent" } } }
                             Text { text: "作业模式"; font.pixelSize: 11; color: cTextSec; bottomPadding: -4 }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 34; radius: cRadiusSm
-                                color: Qt.rgba(0/255,0/255,0/255,0.25); border.color: Qt.rgba(0/255,242/255,254/255,0.12); border.width: 1
+                                color: Qt.rgba(0/255,0/255,0/255,0.15); border.color: Qt.rgba(0/255,242/255,254/255,0.12); border.width: 1
                                 ComboBox {
                                     id: modeCombo; anchors.fill: parent; anchors.margins: 1
                                     model: ["螺丝", "螺母垫片", "其他"]; currentIndex: 0
@@ -252,7 +274,7 @@ ApplicationWindow {
                                     indicator: Text { anchors.right: parent.right; anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter; text: "▼"; font.pixelSize: 9; color: cTextSec }
                                     popup: Popup {
                                         y: parent.height + 3; width: parent.width; padding: 3; clip: true
-                                        background: Rectangle { radius: cRadiusSm; color: "#0F1A2E"; border.color: Qt.rgba(0/255,242/255,254/255,0.15); border.width: 1 }
+                                        background: Rectangle { radius: cRadiusSm; color: "#1A1F3A"; border.color: Qt.rgba(0/255,242/255,254/255,0.15); border.width: 1 }
                                         contentItem: ListView {
                                             clip: true; implicitHeight: contentHeight
                                             model: modeCombo.delegateModel; currentIndex: modeCombo.currentIndex
@@ -271,7 +293,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 id: stCard; Layout.fillWidth: true; Layout.preferredHeight: 62; radius: cRadiusSm
-                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
                                 DropShadow { anchors.fill: stCard; source: stCard; horizontalOffset: 0; verticalOffset: 0; color: Qt.rgba(0/255,242/255,254/255,0.05); radius: 8; samples: 14; transparentBorder: true }
                                 ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 3
                                     Row { spacing: 8
@@ -286,7 +308,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 60; radius: cRadiusSm
-                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
                                 DropShadow { anchors.fill: parent; source: parent; horizontalOffset: 0; verticalOffset: 0; color: Qt.rgba(0/255,242/255,254/255,0.05); radius: 8; samples: 14; transparentBorder: true }
                                 ColumnLayout { anchors.fill: parent; anchors.margins: 12; spacing: 3
                                     Row { spacing: 6
@@ -301,7 +323,7 @@ ApplicationWindow {
                             }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.preferredHeight: 84; radius: cRadiusSm
-                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(0/255,242/255,254/255,0.08); border.width: 1
+                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(180/255,80/255,255/255,0.10); border.width: 1
                                 DropShadow { anchors.fill: parent; source: parent; horizontalOffset: 0; verticalOffset: 0; color: Qt.rgba(0/255,242/255,254/255,0.05); radius: 8; samples: 14; transparentBorder: true }
                                 RowLayout { anchors.fill: parent; anchors.margins: 8; spacing: 3
                                     Item { Layout.fillWidth: true; Layout.fillHeight: true
@@ -366,7 +388,7 @@ ApplicationWindow {
                             Rectangle {
                                 id: btnC; property bool h: false
                                 Layout.fillWidth: true; Layout.preferredHeight: 44; radius: cRadiusSm; color: Qt.rgba(255/255,255/255,255/255,0.02); border.color: Qt.rgba(255/255,215/255,0/255,btnC.h ? 0.35 : 0.10); border.width: 1; Behavior on border.color { ColorAnimation { duration: 200 } }
-                                Text { anchors.centerIn: parent; text: "下达指令"; font.pixelSize: 13; color: btnC.h ? "#FFD700" : Qt.rgba(255/255,215/255,0/255,0.6); Behavior on color { ColorAnimation { duration: 200 } } }
+                                Text { anchors.centerIn: parent; text: "下达指令"; font.pixelSize: 13; color: btnC.h ? "#F5A623" : Qt.rgba(255/255,215/255,0/255,0.6); Behavior on color { ColorAnimation { duration: 200 } } }
                                 Rectangle { anchors.fill: parent; radius: parent.radius; color: Qt.rgba(255/255,215/255,0/255,btnC.h ? 0.06 : 0); Behavior on color { ColorAnimation { duration: 200 } } }
                                 MouseArea { anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: backend.sendCommand(); onEntered: btnC.h = true; onExited: btnC.h = false; onPressed: parent.opacity = 0.8; onReleased: parent.opacity = 1.0 }
                                 Behavior on opacity { NumberAnimation { duration: 80 } }
@@ -381,9 +403,9 @@ ApplicationWindow {
                         DropShadow { anchors.fill: aiCam; source: aiCam; horizontalOffset: 0; verticalOffset: 0; color: cGlowSoft; radius: 24; samples: 28; transparentBorder: true }
                         ColumnLayout { anchors.fill: parent; spacing: 0
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 34; color: Qt.rgba(0/255,0/255,0/255,0.25)
+                                Layout.fillWidth: true; Layout.preferredHeight: 34; color: Qt.rgba(0/255,0/255,0/255,0.15)
                                 RowLayout { anchors.fill: parent; anchors.leftMargin: 16; anchors.rightMargin: 16
-                                    Rectangle { width: 6; height: 6; radius: 3; color: cPurple }
+                                    Rectangle { width: 6; height: 6; radius: 3; color: Qt.rgba(255/255,107/255,157/255,0.8) }
                                     Text { text: "AI 识别画面"; font.pixelSize: 12; color: cTextSec }
                                     Item { Layout.fillWidth: true }
                                     Row { spacing: 4
@@ -398,11 +420,25 @@ ApplicationWindow {
                                 }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.fillHeight: true; color: "#080C18"
-                                Image { anchors.fill: parent; anchors.margins: 1; fillMode: Image.PreserveAspectFit; source: "image://camera/live?" + backend.frameCounter; cache: false }
+                                Layout.fillWidth: true; Layout.fillHeight: true; color: "transparent"
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width - 24
+                                    height: parent.height - 24
+                                    radius: 6
+                                    color: Qt.rgba(0/255, 0/255, 0/255, 0.15)
+                                    border.color: Qt.rgba(180/255, 80/255, 255/255, 0.12)
+                                    border.width: 1
+                                    Image {
+                                        anchors.fill: parent; anchors.margins: 2
+                                        fillMode: Image.PreserveAspectFit
+                                        source: "image://camera/live?" + backend.frameCounter
+                                        cache: false
+                                    }
+                                }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 28; color: Qt.rgba(0/255,0/255,0/255,0.3)
+                                Layout.fillWidth: true; Layout.preferredHeight: 28; color: Qt.rgba(0/255,0/255,0/255,0.18)
                                 RowLayout { anchors.fill: parent; anchors.leftMargin: 12; anchors.rightMargin: 12
                                     Text { text: "AI 推理待接入"; font.pixelSize: 10; color: cTextDim }
                                     Item { Layout.fillWidth: true } }
@@ -417,12 +453,12 @@ ApplicationWindow {
                             RowLayout { Layout.fillWidth: true
                                 Text { text: "AI 识别中心"; font.pixelSize: 14; font.weight: Font.Bold; color: cTextWhite }
                                 Item { Layout.fillWidth: true }
-                                Rectangle { width: 6; height: 6; radius: 3; color: cPurple }
+                                Rectangle { width: 6; height: 6; radius: 3; color: Qt.rgba(255/255,107/255,157/255,0.8) }
                             }
                             Rectangle { Layout.fillWidth: true; height: 1
                                 gradient: Gradient {
                                     GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 0.5; color: Qt.rgba(118/255,75/255,162/255,0.12) }
+                                    GradientStop { position: 0.5; color: Qt.rgba(255/255,255/255,255/255,0.06) }
                                     GradientStop { position: 1.0; color: "transparent" } } }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.fillHeight: true; radius: cRadiusSm
