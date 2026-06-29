@@ -63,33 +63,41 @@ USB 摄像头 / 本地图片
 ```
 OPI_Feature_System_focus_vision/
 ├── main.py                 # CLI 主入口（命令行模式）
-├── main_gui.py             # GUI 主入口（新版默认：PySide6 + QML）
-├── main_gui_qml.py         # 新版 QML 入口备份副本
+├── main_gui.py             # GUI 主入口（PySide6 + QML）
 ├── main_gui_pyqt6.py       # 旧版 PyQt6 入口（回滚用）
 ├── run.bat                 # 双击启动新版 QML UI
 ├── run_legacy.bat          # 双击启动旧版 PyQt6 UI
-├── config.json             # 配置文件
+├── config.json             # 配置文件（含螺丝型号数据库）
 ├── enviroment.txt          # Conda 环境说明
 ├── .gitignore
 ├── README.md
 ├── requirements.txt        # 依赖库文件
-├── AI+CV.pdf               # AI+CV 方案计划书
+├── AI+CV_v2.pdf            # AI+CV 方案计划书 v2
 │
 ├── core/
 │   ├── __init__.py
-│   └── detector.py         # 核心视觉算法：检测与测量
+│   ├── detector.py         # ★ 协调控制器：AI + CV + DB 三阶段流水线
+│   ├── ai_detector.py      # ★ AI 检测模块（NPU 推理，加载 RKNN）
+│   ├── database.py         # ★ 螺丝型号数据库模块（CRUD + 匹配）
+│   └── measurement.py      # ★ CV 精密测量模块（边缘检测 + 轮廓拟合）
 │
 ├── hardware/
 │   ├── __init__.py
-│   └── hardware_stub.py    # 硬件接口（Orange Pi 5 Pro GPIO 适配）
+│   └── hardware_stub.py    # 硬件接口（GPIO 占位，待实现）
 │
 ├── ui/
 │   ├── __init__.py
-│   ├── main_window.py      # 旧版 PyQt6 Widgets 界面
+│   ├── main_window.py      # 旧版 PyQt6 Widgets 界面（回滚备份）
 │   ├── vision_backend.py   # ★ 新版：PySide6 后端隔离层
 │   └── VisionUI.qml        # ★ 新版：QML 深色玻璃质感界面
 │
-└── samples/                # 存放待测量螺丝静态图
+├── models/                 # RKNN 量化模型存放
+│   └── __init__.py
+│
+├── scripts/                # 工具脚本（标定/训练/转换）
+│   └── __init__.py
+│
+└── samples/                # 存放待测量螺丝静态图                # 存放待测量螺丝静态图
 ```
 
 ## 功能模块
