@@ -1,4 +1,4 @@
-﻿# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
+# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
 
 基于香橙派 5 Pro 的螺丝精密尺寸测量与自动筛选系统。
 原项目从树莓派 4B 移植至此平台。
@@ -64,24 +64,6 @@ USB 摄像头 / 本地图片
 OPI_Feature_System_focus_vision/
 ├── core/
 │   ├── __init__.py
-│   ├── detector.py         # #x2605; #x534f;#x8c03;#x63a7;#x5236;#x5668;uff1aAI + CV + DB #x4e09;#x9636;#x6bb5;#x6d41;#x6c34;#x7ebf;
-│   ├── ai_detector.py      # #x2605; AI #x68c0;#x6d4b;#x6a21;#x5757;uff08;NPU #x63a8;#x7406;uff0c;#x52a0;#x8f7d;RKNNuff09;
-│   ├── database.py         # #x2605; #x8783;#x4e1d;#x578b;#x53f7;#x6570;#x636e;#x5e93;#x6a21;#x5757;uff08;CRUD + #x5339;#x914d;uff09;
-│   └── measurement.py      # #x2605; CV #x7cbe;#x5bc6;#x6d4b;#x91cf;#x6a21;#x5757;uff08;#x8fb9;#x7f18;#x68c0;#x6d4b; + #x8f6e;#x5ed3;#x62df;#x5408;uff09;
- main.py                 # CLI 主入口（命令行模式）
-├── main_gui.py             # GUI 主入口（PySide6 + QML）
-├── main_gui_pyqt6.py       # 旧版 PyQt6 入口（回滚用）
-├── run.bat                 # 双击启动新版 QML UI
-├── run_legacy.bat          # 双击启动旧版 PyQt6 UI
-├── config.json             # 配置文件（含螺丝型号数据库）
-├── enviroment.txt          # Conda 环境说明
-├── .gitignore
-├── README.md
-├── requirements.txt        # 依赖库文件
-├── AI+CV_v2.pdf            # AI+CV 方案计划书 v2
-│
-├── core/
-│   ├── __init__.py
 │   ├── detector.py         # ★ 协调控制器：AI + CV + DB 三阶段流水线
 │   ├── ai_detector.py      # ★ AI 检测模块（NPU 推理，加载 RKNN）
 │   ├── database.py         # ★ 螺丝型号数据库模块（CRUD + 匹配）
@@ -104,6 +86,18 @@ OPI_Feature_System_focus_vision/
 │   └── __init__.py
 │
 └── samples/                # 存放待测量螺丝静态图
+│
+├── main.py                 # CLI 主入口（命令行模式）
+├── main_gui.py             # GUI 主入口（PySide6 + QML）
+├── main_gui_pyqt6.py       # 旧版 PyQt6 入口（回滚用）
+├── run.bat                 # 双击启动新版 QML UI
+├── run_legacy.bat          # 双击启动旧版 PyQt6 UI
+├── config.json             # 配置文件（含螺丝型号数据库）
+├── enviroment.txt          # Conda 环境说明
+├── .gitignore
+├── README.md
+├── requirements.txt        # 依赖库文件
+└── AI+CV_v2.pdf            # AI+CV 方案计划书 v2
 ```
 
 ## 功能模块
