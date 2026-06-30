@@ -1,4 +1,4 @@
-"""
+﻿"""
 VisionBackend: PySide6 ????????????? QML UI?
 
 ???
@@ -49,6 +49,7 @@ class VisionBackend(QObject):
     frameCounterChanged = Signal()
     detectionCountChanged = Signal()
     matchResultChanged = Signal()
+    toleranceChanged = Signal()
     screwListChanged = Signal()
     modeChanged = Signal()
 
@@ -66,6 +67,7 @@ class VisionBackend(QObject):
         # ????
         self._match_name = "--"
         self._match_deviation = 0.0
+        self._tolerance = 0.0
         self._match_count = 0
 
         # ????
@@ -84,6 +86,7 @@ class VisionBackend(QObject):
         # ???
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._on_timer_tick)
+        self._selected_screw_id = ""
         self._timer.setInterval(100)
 
     # -- 公共生命周期 --
@@ -228,6 +231,35 @@ class VisionBackend(QObject):
                  "length": s.length} for s in screws]
         return json.dumps(data, ensure_ascii=False)
 
+
+    @Slot(result=list)
+    def getScrewListForQml(self):
+        """返回螺丝型号列表供QML下拉框使用"""
+        return [{"id": s.id, "name": s.name, "diameter": s.diameter,
+                 "length": s.length} for s in self._db.list_all()]
+
+    @Slot(str)
+    def selectScrew(self, screw_id):
+        """用户直接选择螺丝型号"""
+        screw = self._db.get_by_id(screw_id)
+        if screw:
+            self._selected_screw_id = screw_id
+            self._diameter = screw.diameter
+            self._length = screw.length
+            self._tolerance = screw.tolerance
+            self._match_name = screw.name
+            self._match_deviation = 0.0
+            self.matchResultChanged.emit()
+            self.measurementUpdated.emit()
+            self.toleranceChanged.emit()
+            self._set_status(f"已选择 {screw.name}", "#4FC3F7")
+
+    @Slot()
+    def reloadScrewList(self):
+        """从 config.json 重新加载螺丝数据，通知 QML 更新下拉框"""
+        self._db._load()
+        self.screwListChanged.emit()
+
     # -- Qt 属性 --
 
     @Property(float, notify=measurementUpdated)
@@ -276,6 +308,7 @@ class VisionBackend(QObject):
     def matchCount(self) -> int:
         return self._match_count
 
+
     @Property(int, notify=modeChanged)
     def mode(self) -> int:
         return self._mode
@@ -285,3 +318,7 @@ class VisionBackend(QObject):
         if self._mode != val:
             self._mode = val
             self.modeChanged.emit()
+
+    @Property(float, notify=toleranceChanged)
+    def tolerance(self) -> float:
+        return self._tolerance

@@ -1,9 +1,33 @@
 {
   "screws": [
-    { "id": "M6x12", "name": "M6×12 盘头螺丝", "diameter": 6.0, "length": 12.0, "tolerance": 0.5 },
-    { "id": "M5x10", "name": "M5×10 盘头螺丝", "diameter": 5.0, "length": 10.0, "tolerance": 0.5 },
-    { "id": "M4x10", "name": "M4×10 沉头螺丝", "diameter": 4.0, "length": 10.0, "tolerance": 0.5 },
-    { "id": "M3x8",  "name": "M3×8 一字螺丝",  "diameter": 3.0, "length": 8.0,  "tolerance": 0.5 }
+    {
+      "id": "M3x6",
+      "name": "M3×6 圆头螺丝",
+      "diameter": 3.0,
+      "length": 6.0,
+      "tolerance": 0.5
+    },
+    {
+      "id": "M3x14",
+      "name": "M3×14 圆头螺丝",
+      "diameter": 3.0,
+      "length": 14.0,
+      "tolerance": 0.5
+    },
+    {
+      "id": "M4x10",
+      "name": "M4×10 圆头螺丝",
+      "diameter": 4.0,
+      "length": 10.0,
+      "tolerance": 0.5
+    },
+    {
+      "id": "M5x20",
+      "name": "M5×20 圆头螺丝",
+      "diameter": 5.0,
+      "length": 20.0,
+      "tolerance": 0.5
+    }
   ],
   "calibration": {
     "pixel_to_mm_ratio": 0.05
