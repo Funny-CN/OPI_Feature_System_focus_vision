@@ -10,12 +10,10 @@ CV 精密测量模块
 输出螺丝的直径、长度等精确尺寸。
 """
 
-import cv2
-import numpy as np
-from typing import List, Tuple, Optional
 
 
 
+@dataclass
 class MeasurementResult:
     """单颗螺丝的测量结果"""
     diameter: float = 0.0       # 直径 (mm)

@@ -29,12 +29,42 @@ class ScrewDetector:
         self.db = ScrewDatabase()
         cal = self._load_calibration()
         self.measurer = PrecisionMeasurer(pixel_per_mm=cal)
-        self.ai = AIDetector()
+        # 从 config.json 加载 AI 模型
+        cfg = self._load_full_config()
+        model_cfg = cfg.get("model", {})
+        backend = model_cfg.get("backend", "onnx")
+        conf_th = model_cfg.get("confidence_threshold", 0.3)
+        nms_th = model_cfg.get("nms_threshold", 0.45)
+        input_sz = model_cfg.get("input_size", 640)
+
+        model_path_key = backend + "_path"
+        model_path = model_cfg.get(model_path_key)
+        if model_path:
+            base = os.path.dirname(os.path.dirname(__file__))
+            model_path = os.path.join(base, model_path)
+
+        self.ai = AIDetector(
+            model_path=model_path,
+            backend=backend if model_path else None,
+            conf_threshold=conf_th,
+            nms_threshold=nms_th,
+            input_size=input_sz
+        )
         self.coin_real_diameter_mm = 25.0
         self.hough_params = {
             "dp": 1, "min_dist": 350, "param1": 100,
             "param2": 40, "min_radius": 60, "max_radius": 300
         }
+
+    def _load_full_config(self):
+        import json
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+        try:
+            with open(path, "r") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
     def _load_calibration(self) -> float:
         import json
         path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")

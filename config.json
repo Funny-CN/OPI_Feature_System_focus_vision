@@ -2,39 +2,44 @@
   "screws": [
     {
       "id": "M3x6",
-      "name": "M3×6 圆头螺丝",
+      "name": "M3x6 圆头螺丝",
       "diameter": 3.0,
       "length": 6.0,
       "tolerance": 0.5
     },
     {
       "id": "M3x14",
-      "name": "M3×14 圆头螺丝",
+      "name": "M3x14 圆头螺丝",
       "diameter": 3.0,
       "length": 14.0,
       "tolerance": 0.5
     },
     {
       "id": "M4x10",
-      "name": "M4×10 圆头螺丝",
+      "name": "M4x10 圆头螺丝",
       "diameter": 4.0,
       "length": 10.0,
       "tolerance": 0.5
     },
     {
       "id": "M5x20",
-      "name": "M5×20 圆头螺丝",
+      "name": "M5x20 圆头螺丝",
       "diameter": 5.0,
       "length": 20.0,
       "tolerance": 0.5
     }
   ],
   "calibration": {
-    "pixel_to_mm_ratio": 0.05
+    "pixel_to_mm_ratio": 0.05,
+    "reference_diameter_mm": 25.0
   },
   "model": {
+    "backend": "onnx",
+    "pt_path": "yolo/weights/best.pt",
+    "onnx_path": "yolo/weights/best.onnx",
     "rknn_path": "models/best.rknn",
-    "confidence_threshold": 0.5,
-    "nms_threshold": 0.45
+    "confidence_threshold": 0.3,
+    "nms_threshold": 0.45,
+    "input_size": 640
   }
 }
