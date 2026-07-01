@@ -25,6 +25,8 @@ class AIDetector:
         self._input_size = input_size
         self._model = None
         self._loaded = False
+        self._last_max_conf = 0.0
+        self._last_box_count = 0
 
         if self._backend is None and model_path:
             ext = os.path.splitext(model_path)[1].lower()
@@ -63,6 +65,8 @@ class AIDetector:
             print("[AI] ONNX 加载失败:", e)
             self._model = None
             self._loaded = False
+        self._last_max_conf = 0.0
+        self._last_box_count = 0
 
     def _load_rknn(self):
         try:
@@ -80,6 +84,8 @@ class AIDetector:
             print("[AI] RKNN 加载失败:", e)
             self._model = None
             self._loaded = False
+        self._last_max_conf = 0.0
+        self._last_box_count = 0
 
     def _load_torch(self):
         try:
@@ -97,6 +103,8 @@ class AIDetector:
             print("[AI] PyTorch 加载失败:", e)
             self._model = None
             self._loaded = False
+        self._last_max_conf = 0.0
+        self._last_box_count = 0
 
     def _preprocess(self, frame):
         h, w = frame.shape[:2]
@@ -152,6 +160,13 @@ class AIDetector:
             h = y2i - y
             if w > 0 and h > 0:
                 results.append((x, y, w, h))
+        # 保存本次检测统计
+        if results:
+            self._last_max_conf = float(max(scores))
+            self._last_box_count = len(results)
+        else:
+            self._last_max_conf = 0.0
+            self._last_box_count = 0
         return results
 
     def _nms(self, boxes, scores, iou_threshold):
@@ -209,3 +224,11 @@ class AIDetector:
     @property
     def backend(self):
         return self._backend
+
+    @property
+    def last_confidence(self):
+        return self._last_max_conf
+
+    @property
+    def last_box_count(self):
+        return self._last_box_count

@@ -259,6 +259,9 @@ ApplicationWindow {
                                     Text { text: "分辨率 1280x720"; font.pixelSize: 10; color: cTextDim }
                                     Item { Layout.fillWidth: true }
                                     Text { text: "模式 " + (workMode === 0 ? "直接选择" : "智能匹配"); font.pixelSize: 10; color: cTextDim }
+                                    Item { Layout.fillWidth: true }
+                                    Rectangle { width: 5; height: 5; radius: 2; color: backend.detectionSource === "AI" ? "#059669" : "#94A3B8"; anchors.verticalCenter: parent.verticalCenter }
+                                    Text { text: backend.detectionSource; font.pixelSize: 10; color: cTextDim }
                                 }
                             }
                         }
@@ -510,20 +513,57 @@ ApplicationWindow {
                                     GradientStop { position: 1.0; color: "transparent" } } }
                             Rectangle {
                                 Layout.fillWidth: true; Layout.fillHeight: true; radius: cRadiusSm
-                                color: Qt.rgba(0/255,0/255,0/255,0.2); border.color: Qt.rgba(37/255,99/255,235/255,0.08); border.width: 1
-                                ColumnLayout { anchors.centerIn: parent; spacing: 12
-                                    Rectangle { Layout.alignment: Qt.AlignHCenter; width: 48; height: 48; radius: 24; color: Qt.rgba(37/255,99/255,235/255,0.1); border.color: Qt.rgba(37/255,99/255,235/255,0.2); border.width: 1
-                                        Text { anchors.centerIn: parent; text: "AI"; font.pixelSize: 16; font.weight: Font.Bold; color: Qt.rgba(255/255,255/255,255/255,0.4) }
+                                color: Qt.rgba(210/255,238/255,220/255,0.7); border.color: Qt.rgba(37/255,99/255,235/255,0.10); border.width: 1
+                                ColumnLayout { anchors.fill: parent; anchors.margins: 14; spacing: 8
+                                    RowLayout { spacing: 8
+                                        Rectangle { width: 8; height: 8; radius: 4; color: backend.aiLoaded ? "#059669" : "#94A3B8" }
+                                        Text { text: "AI 模型状态"; font.pixelSize: 11; color: cTextSec }
+                                        Item { Layout.fillWidth: true }
+                                        Text { text: backend.aiLoaded ? "已加载" : "未加载"; font.pixelSize: 12; font.weight: Font.Bold; color: backend.aiLoaded ? "#059669" : cTextSec }
                                     }
-                                    Text { text: "AI 模型尚未接入"; font.pixelSize: 13; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "等待 AI 推理模型就绪后，此页面将显示实时识别分类结果"; font.pixelSize: 10; color: cTextDim; Layout.alignment: Qt.AlignHCenter; Layout.preferredWidth: parent.width * 0.7; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap }
+                                    Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(0/255,0/255,0/255,0.05) }
+                                    RowLayout { spacing: 8
+                                        Column { spacing: 4; Layout.fillWidth: true
+                                            Text { text: "推理后端"; font.pixelSize: 10; color: cTextSec }
+                                            Text { text: backend.aiBackend; font.pixelSize: 14; font.weight: Font.Bold; color: cTextWhite }
+                                        }
+                                        Column { spacing: 4; Layout.fillWidth: true
+                                            Text { text: "检测源"; font.pixelSize: 10; color: cTextSec }
+                                            Text { text: backend.detectionSource; font.pixelSize: 14; font.weight: Font.Bold; color: backend.detectionSource === "AI" ? "#059669" : cTextWhite }
+                                        }
+                                    }
+                                    Rectangle { Layout.fillWidth: true; height: 1; color: Qt.rgba(0/255,0/255,0/255,0.05) }
+                                    RowLayout { spacing: 8
+                                        Column { spacing: 4; Layout.fillWidth: true
+                                            Text { text: "本帧检测数"; font.pixelSize: 10; color: cTextSec }
+                                            Text { text: backend.aiScrewCount; font.pixelSize: 22; font.weight: Font.Light; color: backend.aiScrewCount > 0 ? "#2563EB" : cTextSec }
+                                        }
+                                        Column { spacing: 4; Layout.fillWidth: true
+                                            Text { text: "最大置信度"; font.pixelSize: 10; color: cTextSec }
+                                            Item { Layout.preferredHeight: 22
+                                                Text { text: backend.aiConfidence > 0 ? backend.aiConfidence.toFixed(3) : "--"; font.pixelSize: 16; font.weight: Font.Light; color: backend.aiConfidence > 0.5 ? "#059669" : backend.aiConfidence > 0.25 ? "#D97706" : cTextSec; anchors.left: parent.left }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             Rectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 50; radius: cRadiusSm; color: Qt.rgba(0/255,0/255,0/255,0.15); border.color: Qt.rgba(37/255,99/255,235/255,0.05); border.width: 1
-                                ColumnLayout { anchors.centerIn: parent; spacing: 2
-                                    Text { text: "识别类别: --"; font.pixelSize: 11; color: cTextSec; Layout.alignment: Qt.AlignHCenter }
-                                    Text { text: "置信度: --"; font.pixelSize: 9; color: cTextDim; Layout.alignment: Qt.AlignHCenter }
+                                Layout.fillWidth: true; Layout.preferredHeight: 50; radius: cRadiusSm; color: Qt.rgba(210/255,238/255,220/255,0.55); border.color: Qt.rgba(37/255,99/255,235/255,0.05); border.width: 1
+                                RowLayout { anchors.fill: parent; anchors.margins: 8; spacing: 6
+                                    Column { spacing: 2; Layout.fillWidth: true
+                                        Text { text: "AI 状态"; font.pixelSize: 9; color: cTextSec }
+                                        Text { text: backend.aiLoaded ? "运行中" : "未激活"; font.pixelSize: 12; font.weight: Font.Bold; color: backend.aiLoaded ? "#059669" : cTextSec }
+                                    }
+                                    Rectangle { Layout.fillHeight: true; width: 1; color: Qt.rgba(0/255,0/255,0/255,0.05) }
+                                    Column { spacing: 2; Layout.fillWidth: true
+                                        Text { text: "检测源"; font.pixelSize: 9; color: cTextSec }
+                                        Text { text: backend.detectionSource; font.pixelSize: 12; font.weight: Font.Bold; color: backend.detectionSource === "AI" ? "#2563EB" : cTextSec }
+                                    }
+                                    Rectangle { Layout.fillHeight: true; width: 1; color: Qt.rgba(0/255,0/255,0/255,0.05) }
+                                    Column { spacing: 2; Layout.fillWidth: true
+                                        Text { text: "置信度"; font.pixelSize: 9; color: cTextSec }
+                                        Text { text: backend.aiConfidence > 0 ? backend.aiConfidence.toFixed(3) : "--"; font.pixelSize: 12; font.weight: Font.Bold; color: backend.aiConfidence > 0.5 ? "#059669" : "#D97706" }
+                                    }
                                 }
                             }
                         }

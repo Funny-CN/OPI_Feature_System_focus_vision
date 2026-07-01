@@ -50,6 +50,7 @@ class VisionBackend(QObject):
     detectionCountChanged = Signal()
     matchResultChanged = Signal()
     toleranceChanged = Signal()
+    aiInfoChanged = Signal()
     screwListChanged = Signal()
     modeChanged = Signal()
 
@@ -69,6 +70,11 @@ class VisionBackend(QObject):
         self._match_deviation = 0.0
         self._tolerance = 0.0
         self._match_count = 0
+        self._ai_loaded = False
+        self._ai_backend = "--"
+        self._ai_confidence = 0.0
+        self._ai_screw_count = 0
+        self._detection_source = "Hough"  # "AI" or "Hough" 
 
         # ????
         self._status_text = "系统待命"
@@ -88,6 +94,9 @@ class VisionBackend(QObject):
         self._timer.timeout.connect(self._on_timer_tick)
         self._selected_screw_id = ""
         self._timer.setInterval(100)
+        # 从检测器初始化 AI 信息
+        self._ai_loaded = self._detector.ai.is_loaded
+        self._ai_backend = self._detector.ai.backend or "--" 
 
     # -- 公共生命周期 --
 
@@ -151,6 +160,14 @@ class VisionBackend(QObject):
         # 使用新的协调器进行完整分析
         analysis = self._detector.analyze(frame)
         processed = analysis.annotated_frame
+
+        # 更新 AI 信息
+        self._ai_loaded = self._detector.ai.is_loaded
+        self._ai_backend = self._detector.ai.backend or "--"
+        self._ai_confidence = self._detector.ai.last_confidence
+        self._ai_screw_count = self._detector.ai.last_box_count
+        self._detection_source = "AI" if (analysis.has_ai and analysis.screws) else "Hough"
+        self.aiInfoChanged.emit()
 
         # 更新测量值
         if analysis.screws:
@@ -306,6 +323,29 @@ class VisionBackend(QObject):
 
     @Property(int, notify=matchResultChanged)
     def matchCount(self) -> int:
+        return self._match_count
+
+    # -- AI 信息属性 --
+
+    @Property(bool, notify=aiInfoChanged)
+    def aiLoaded(self) -> bool:
+        return self._ai_loaded
+
+    @Property(str, notify=aiInfoChanged)
+    def aiBackend(self) -> str:
+        return self._ai_backend
+
+    @Property(float, notify=aiInfoChanged)
+    def aiConfidence(self) -> float:
+        return self._ai_confidence
+
+    @Property(int, notify=aiInfoChanged)
+    def aiScrewCount(self) -> int:
+        return self._ai_screw_count
+
+    @Property(str, notify=aiInfoChanged)
+    def detectionSource(self) -> str:
+        return self._detection_source
         return self._match_count
 
 
