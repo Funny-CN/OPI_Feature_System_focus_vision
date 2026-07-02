@@ -30,7 +30,7 @@
     }
   ],
   "calibration": {
-    "pixel_to_mm_ratio": 0.05,
+    "pixel_to_mm_ratio": 6.24,
     "reference_diameter_mm": 25.0
   },
   "model": {
