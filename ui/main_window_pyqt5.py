@@ -3,11 +3,11 @@ import os
 import cv2
 import numpy as np
 import math
-from PyQt6.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QWidget,
+from PyQt5.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QWidget,
                              QLabel, QHBoxLayout, QComboBox, QFrame, QApplication,
                              QSizePolicy, QScrollArea)
-from PyQt6.QtGui import QPixmap, QImage, QColor, QLinearGradient, QPalette, QBrush, QPainter, QRadialGradient
-from PyQt6.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPixmap, QImage, QColor, QLinearGradient, QPalette, QBrush, QPainter, QRadialGradient
+from PyQt5.QtCore import Qt, QTimer
 
 from core.detector import ScrewDetector
 from core.database import ScrewDatabase
@@ -50,7 +50,7 @@ class BackgroundCanvas(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._phase = 0.0
-        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents)
         self._timer = QTimer(self)
         self._timer.timeout.connect(lambda: self.update())
         self._timer.setInterval(50)
@@ -58,7 +58,7 @@ class BackgroundCanvas(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.Antialiasing)
         w, h = self.width(), self.height()
         self._phase += 0.045
         if w < 1 or h < 1:
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
         g = QLinearGradient(0, 0, 1280, 800)
         g.setColorAt(0.0, QColor(C_BG_START))
         g.setColorAt(1.0, QColor(C_BG_END))
-        p.setBrush(QPalette.ColorRole.Window, QBrush(g))
+        p.setBrush(QPalette.Window, QBrush(g))
         self.setPalette(p)
         self.setStyleSheet("*{ font-family: 'Microsoft YaHei UI'; }")
 
@@ -261,10 +261,10 @@ class MainWindow(QMainWindow):
         img_frame.setStyleSheet("background: transparent;")
         il = QVBoxLayout(img_frame)
         self._image_label = QLabel("正在初始化视频流...")
-        self._image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._image_label.setAlignment(Qt.AlignCenter)
         self._image_label.setMinimumSize(640, 420)
         self._image_label.setStyleSheet("background: transparent; border: none;")
-        self._image_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         il.addWidget(self._image_label)
         cl.addWidget(img_frame, stretch=1)
 
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
         for b, m in [(self._btn_mode_match, 1), (self._btn_mode_select, 0)]:
             b.setCheckable(True)
             b.setMinimumHeight(34)
-            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(lambda checked, v=m: self._set_work_mode(v))
             mr.addWidget(b)
         cl.addLayout(mr)
@@ -363,15 +363,15 @@ class MainWindow(QMainWindow):
         def mk_val(title):
             vb = QVBoxLayout()
             vb.setSpacing(0)
-            vb.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            vb.setAlignment(Qt.AlignCenter)
             t = QLabel(title, styleSheet=_ss(C_TEXT_SEC, 12))
-            t.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            t.setAlignment(Qt.AlignCenter)
             vb.addWidget(t)
             v = QLabel("--", styleSheet=_ss(C_TEXT_SEC, 32, "light"))
-            v.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            v.setAlignment(Qt.AlignCenter)
             vb.addWidget(v)
             u = QLabel("mm", styleSheet=_ss(C_TEXT_SEC, 12))
-            u.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            u.setAlignment(Qt.AlignCenter)
             vb.addWidget(u)
             return v, vb
 
@@ -385,7 +385,7 @@ class MainWindow(QMainWindow):
 
         # === 匹配结果 + 偏差 ===
         self._match_result_label = QLabel("")
-        self._match_result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._match_result_label.setAlignment(Qt.AlignCenter)
         self._match_result_label.setVisible(False)
         cl.addWidget(self._match_result_label)
 
@@ -420,7 +420,7 @@ class MainWindow(QMainWindow):
             }
             QPushButton:hover { background-color: #CBD5E1; }
         """)
-        self._btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_next.setCursor(Qt.PointingHandCursor)
         self._btn_next.clicked.connect(self._go_next)
         cl.addWidget(self._btn_next)
 
@@ -609,7 +609,7 @@ class MainWindow(QMainWindow):
             bg = "rgba(245, 252, 248, 0.5)"
             border = "1px solid rgba(100,116,139,0.10)"
         f.setStyleSheet(f"background-color: {bg}; border: {border}; border-radius: 6px;")
-        f.setCursor(Qt.CursorShape.PointingHandCursor)
+        f.setCursor(Qt.PointingHandCursor)
         f.setMinimumHeight(48)
 
         lay = QVBoxLayout(f)
@@ -829,4 +829,5 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
 
