@@ -531,7 +531,7 @@ class MainWindow(QMainWindow):
             if self._work_mode == 0:
                 self._diameter = s.diameter
                 self._length = s.length
-                self._width = None
+                self._width = 0.0
                 self._match_name = s.name
                 self._match_deviation = 0.0
                 self._update_meas()

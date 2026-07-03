@@ -172,9 +172,9 @@ class VisionBackend(QObject):
         # 更新测量值
         if analysis.screws:
             sr = analysis.screws[0]
-            self._diameter = sr.measurement.diameter
-            self._length = sr.measurement.length
-            self._width = sr.measurement.width
+            self._diameter = sr.measurement.head_diameter
+            self._length = sr.measurement.shaft_length
+            self._width = sr.measurement.shaft_diameter
             self._detection_count += 1
             self.detectionCountChanged.emit()
 
@@ -346,7 +346,6 @@ class VisionBackend(QObject):
     @Property(str, notify=aiInfoChanged)
     def detectionSource(self) -> str:
         return self._detection_source
-        return self._match_count
 
 
     @Property(int, notify=modeChanged)

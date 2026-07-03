@@ -82,7 +82,7 @@ class ScrewDetector:
             return result
         measurements = self.measurer.measure_with_boxes(frame, boxes)
         for box, meas in zip(boxes, measurements):
-            match = self.db.match(meas.diameter)
+            match = self.db.match(meas.shaft_diameter)
             sr = ScrewResult(box=box, measurement=meas, match=match)
             result.screws.append(sr)
             self._annotate(result.annotated_frame, sr)
@@ -122,9 +122,9 @@ class ScrewDetector:
         match = sr.match
         color = (0, 255, 0) if match.matched else (0, 0, 255)
         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-        label = "D:{:.1f}".format(meas.diameter)
-        if meas.length > 0:
-            label += " L:{:.1f}".format(meas.length)
+        label = "H:{:.1f} Sd:{:.1f}".format(meas.head_diameter, meas.shaft_diameter)
+        if meas.shaft_length > 0:
+            label += " Sl:{:.1f}".format(meas.shaft_length)
         cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         if match.matched:
             mlabel = "{} dev:{:.2f}".format(match.screw.name, match.deviation)
@@ -136,10 +136,10 @@ class ScrewDetector:
         diameters = []
         for box in boxes:
             meas = self.measurer.measure_with_boxes(img, [box])[0]
-            diameters.append(meas.diameter)
+            diameters.append(meas.shaft_diameter)
             x, y, w, h = box
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(img, "{:.1f}mm".format(meas.diameter), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            cv2.putText(img, "{:.1f}mm".format(meas.shaft_diameter), (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
         return diameters, img
     def target_sampling(self, image_path):
         img = cv2.imread(image_path)

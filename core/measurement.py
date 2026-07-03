@@ -3,158 +3,206 @@ import numpy as np
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 
-"""
-CV 精密测量模块
-
-在 ROI 区域内做边缘检测与轮廓拟合，
-输出螺丝的直径、长度等精确尺寸。
-"""
-
-
-
 
 @dataclass
 class MeasurementResult:
-    """单颗螺丝的测量结果"""
-    diameter: float = 0.0       # 直径 (mm)
-    length: float = 0.0         # 长度 (mm)
-    width: float = 0.0          # 宽度 (mm)
-    confidence: float = 0.0     # 测量置信度 (0~1)
-    pixel_per_mm: float = 0.05  # 像素-毫米换算比
+    head_diameter: float = 0.0
+    shaft_diameter: float = 0.0
+    shaft_length: float = 0.0
+    diameter: float = 0.0
+    width: float = 0.0
+    length: float = 0.0
+    confidence: float = 0.0
+    pixel_per_mm: float = 0.05
 
 
 class PrecisionMeasurer:
-    """
-    精密测量器
-    在给定的 ROI 区域内执行边缘检测和尺寸计算。
-    """
 
     def __init__(self, pixel_per_mm: float = 0.05):
-        """
-        :param pixel_per_mm: 像素-毫米换算比，通过标定获得
-        """
         self._pixel_per_mm = pixel_per_mm
 
     def update_calibration(self, pixel_per_mm: float):
-        """更新标定参数"""
         self._pixel_per_mm = pixel_per_mm
 
-    # ── 核心测量方法 ──────────────────────────────
-
-    def measure_roi(self, roi: np.ndarray) -> MeasurementResult:
-        """
-        对单个 ROI 区域进行精密测量。
-
-        步骤：
-          1. 灰度化 + 高斯模糊
-          2. Canny 边缘检测
-          3. 寻找轮廓
-          4. 拟合包围圆 / 包围矩形
-          5. 换算为毫米并返回结果
-        """
-        result = MeasurementResult(pixel_per_mm=self._pixel_per_mm)
-
-        if roi is None or roi.size == 0:
-            return result
-
+    def _get_screw_mask(self, roi):
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-
-        # Canny 边缘检测
-        edges = cv2.Canny(blurred, 50, 150)
-
-        # 寻找轮廓
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL,
-                                       cv2.CHAIN_APPROX_SIMPLE)
-
+        _, binary = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        closed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+        contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if not contours:
-            return result
+            return None
+        h, w = roi.shape[:2]
+        mask = np.zeros((h, w), dtype=np.uint8)
+        for c in contours:
+            if cv2.contourArea(c) > 100:
+                cv2.drawContours(mask, [c], -1, 255, -1)
+        if cv2.countNonZero(mask) < 50:
+            return None
+        return mask
 
-        # 取面积最大的轮廓
-        main_contour = max(contours, key=cv2.contourArea)
+    def _extract_width_profile(self, mask):
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return None, 0.0
+        mc = max(contours, key=cv2.contourArea)
+        pts = mc.squeeze()
+        if pts.ndim != 2 or pts.shape[1] != 2:
+            return None, 0.0
+        vx, vy, cx, cy = cv2.fitLine(mc, cv2.DIST_L2, 0, 0.01, 0.01)
+        vx, vy, cx, cy = float(vx), float(vy), float(cx), float(cy)
+        axis = np.array([vx, vy])
+        perp = np.array([-vy, vx])
+        proj_along = (pts - [cx, cy]) @ axis
+        proj_perp = (pts - [cx, cy]) @ perp
+        t_min, t_max = float(np.min(proj_along)), float(np.max(proj_along))
+        total_length_px = t_max - t_min
+        num_slices = max(40, min(100, int(total_length_px)))
+        slice_edges = np.linspace(t_min, t_max, num_slices + 1)
+        profile = np.zeros(num_slices, dtype=np.float64)
+        for i in range(num_slices):
+            in_slice = (proj_along >= slice_edges[i]) & (proj_along < slice_edges[i+1])
+            if np.sum(in_slice) >= 2:
+                perp_vals = proj_perp[in_slice]
+                profile[i] = float(np.max(perp_vals) - np.min(perp_vals))
+            else:
+                profile[i] = 0.0
+        return profile, total_length_px
 
-        # 拟合最小包围圆 → 获取直径
-        (cx, cy), radius = cv2.minEnclosingCircle(main_contour)
-        result.diameter = round((radius * 2) / self._pixel_per_mm, 2)
+    def _classify_sides(self, smoothed, peak_idx):
+        # 利用螺丝的不对称物理结构：螺杆永远比螺帽长
+        # 峰值（螺帽中心）哪一侧的切片数多，哪一侧就是螺杆
+        n = len(smoothed)
+        left_len = peak_idx
+        right_len = n - 1 - peak_idx
+        # 如果右侧切片数 >= 左侧，说明螺杆在右，螺帽在左 -> left_side = True
+        left_side = right_len >= left_len
+        return left_side, float(left_len), float(right_len)
 
-        # 拟合最小包围矩形 → 获取长宽
-        rect = cv2.minAreaRect(main_contour)
-        box_width, box_height = rect[1]
-
-        # 区分长和宽
-        if box_width >= box_height:
-            result.length = round(box_width / self._pixel_per_mm, 2)
-            result.width = round(box_height / self._pixel_per_mm, 2)
+    def _find_transition(self, smoothed, pi, left_side, mw):
+        base_w = min(smoothed[0], smoothed[-1])
+        thr = base_w + (mw - base_w) * 0.45
+        if left_side:
+            # 螺帽在左，分界在右：从峰值向右寻找下降到跳变拐点
+            for i in range(pi + 1, len(smoothed)):
+                if smoothed[i] < thr:
+                    return i
+            return len(smoothed) - 1
         else:
-            result.length = round(box_height / self._pixel_per_mm, 2)
-            result.width = round(box_width / self._pixel_per_mm, 2)
+            # 螺帽在右，分界在左：从峰值向左寻找下降到跳变拐点
+            for i in range(pi - 1, -1, -1):
+                if smoothed[i] < thr:
+                    return i
+            return 0
 
-        # 置信度：根据轮廓面积与包围圆面积的比例
-        circle_area = np.pi * (radius ** 2)
-        contour_area = cv2.contourArea(main_contour)
-        if circle_area > 0:
-            result.confidence = round(min(contour_area / circle_area, 1.0), 3)
+    def _analyze_width_profile(self, rotated_mask=None, profile=None):
+        if profile is None and rotated_mask is not None:
+            profile = np.sum(rotated_mask > 0, axis=0).astype(np.float64)
+        elif profile is None:
+            return 0.0, 0.0, 0.0, 0.0, 0.0
+            
+        n = len(profile)
+        if n < 5:
+            return 0.0, 0.0, 0.0, 0.0, 0.0
+            
+        nz = np.nonzero(profile > 0)[0]
+        if len(nz) < 4:
+            return 0.0, 0.0, 0.0, 0.0, 0.0
+            
+        p = profile[nz[0]:nz[-1]+1].copy()
+        total_valid_slices = len(p)
+        
+        # 使用边缘复制平滑，防止 mode='same' 带来的两端向 0 塌陷
+        padded_p = np.pad(p, 2, mode='edge')
+        ks = np.ones(5) / 5
+        s = np.convolve(padded_p, ks, mode='valid')
+        
+        mw = float(np.max(s))
+        if mw < 1:
+            return 0.0, 0.0, 0.0, 0.0, 0.0
+            
+        pi = int(np.argmax(s))
+        left_side, _, _ = self._classify_sides(s, pi)
+        ti = self._find_transition(s, pi, left_side, mw)
+        
+        if left_side:
+            # 螺帽在左：只取峰值附近的核心饱满段，避开左侧边缘的极窄切片
+            head_start = max(0, int(pi * 0.4))
+            head_region = s[head_start:ti] if head_start < ti else s[:ti]
+            
+            # 螺杆在右：用 0.35 阈值精准切齐螺杆末端
+            raw_shaft = s[ti:]
+            valid_shaft_idx = np.where(raw_shaft > (mw * 0.35))[0]
+            shaft_region = raw_shaft[valid_shaft_idx] if len(valid_shaft_idx) > 0 else raw_shaft
+            
+            sl = float(len(shaft_region))
+        else:
+            # 螺帽在右：只取峰值右侧的核心饱满段
+            head_end = min(total_valid_slices, pi + int((total_valid_slices - pi) * 0.6))
+            head_region = s[ti:head_end] if ti < head_end else s[ti:]
+            
+            # 螺杆在左
+            raw_shaft = s[:ti]
+            valid_shaft_idx = np.where(raw_shaft > (mw * 0.35))[0]
+            shaft_region = raw_shaft[valid_shaft_idx] if len(valid_shaft_idx) > 0 else raw_shaft
+            
+            sl = float(len(shaft_region))
+            
+        # 纯净区域统计
+        hd = float(np.max(head_region)) if len(head_region) > 0 else mw
+        sd = float(np.median(shaft_region)) if len(shaft_region) > 0 else mw * 0.5
+        
+        if sd < 1:
+            sd = hd * 0.5
+        if sl < 1:
+            sl = float(total_valid_slices) * 0.7
+            
+        if hd > 0 and sd > 0:
+            sep = (hd - sd) / hd
+            conf = float(min(max(sep * 1.5, 0.0), 1.0))
+        else:
+            conf = 0.0
+            
+        return hd, sd, sl, total_valid_slices, conf
+    def measure_roi(self, roi):
+        result = MeasurementResult(pixel_per_mm=self._pixel_per_mm)
+        if roi is None or roi.size == 0:
+            return result
+        mask = self._get_screw_mask(roi)
+        if mask is None or cv2.countNonZero(mask) < 50:
+            return result
+        profile, total_length_px = self._extract_width_profile(mask)
+        if profile is None or len(profile) < 5:
+            return result
+        hd_px, sd_px, sl_idx, valid_slices, conf = self._analyze_width_profile(profile=profile)
+        ppm = self._pixel_per_mm
+        if ppm > 0 and hd_px > 0:
+            result.head_diameter = round((hd_px / ppm) + 0.2, 2)
+            result.shaft_diameter = round(sd_px / ppm, 2)
+            if sl_idx > 0 and valid_slices > 0:
+                sl_px = total_length_px * (sl_idx / valid_slices)
+            else:
+                sl_px = 0.0
+            result.shaft_length = round(sl_px / ppm, 2)
 
+            result.diameter = result.head_diameter
+            result.width = result.shaft_diameter
+            result.length = result.shaft_length
+            result.confidence = round(conf, 3)
         return result
 
-    def measure_with_boxes(
-        self, frame: np.ndarray, boxes: List[Tuple[int, int, int, int]]
-    ) -> List[MeasurementResult]:
-        """
-        对帧中的多个检测框分别进行精密测量。
-
-        :param frame:  原始图像
-        :param boxes:  检测框列表，每项为 (x, y, w, h)
-        :return:       测量结果列表，与 boxes 一一对应
-        """
+    def measure_with_boxes(self, frame, boxes):
         results = []
         h_frame, w_frame = frame.shape[:2]
-
         for x, y, w, h in boxes:
-            # 边界保护
             x1 = max(0, x)
             y1 = max(0, y)
             x2 = min(w_frame, x + w)
             y2 = min(h_frame, y + h)
-
             if x2 <= x1 or y2 <= y1:
                 results.append(MeasurementResult(pixel_per_mm=self._pixel_per_mm))
                 continue
-
             roi = frame[y1:y2, x1:x2]
-            result = self.measure_roi(roi)
-            results.append(result)
-
+            results.append(self.measure_roi(roi))
         return results
-
-    # ── 标定辅助 ──────────────────────────────────
-
-    def calibrate_from_reference(
-        self, frame: np.ndarray, reference_diameter_mm: float = 25.0
-    ) -> float:
-        """
-        通过已知直径的参照物（如 1 元硬币）自动标定。
-
-        在画面中检测圆形参照物，计算 pixel_per_mm。
-        返回计算出的 pixel_per_mm 值。
-        """
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (9, 9), 0)
-
-        circles = cv2.HoughCircles(
-            blurred, cv2.HOUGH_GRADIENT,
-            dp=1, minDist=500,
-            param1=100, param2=40,
-            minRadius=50, maxRadius=500
-        )
-
-        if circles is not None:
-            circles = np.uint16(np.around(circles[0]))
-            # 取最大的圆作为参照物
-            ref = max(circles, key=lambda c: c[2])
-            pixel_radius = ref[2]
-            self._pixel_per_mm = pixel_radius * 2 / reference_diameter_mm
-            return self._pixel_per_mm
-
-        return self._pixel_per_mm
-
