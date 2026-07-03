@@ -1,4 +1,4 @@
-# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
+﻿# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
 
 基于 Orange Pi 5 Pro 的螺丝精密尺寸测量与自动筛选系统。
 原项目从树莓派 4B 移植至此平台。
@@ -15,7 +15,7 @@
    训练好的 YOLOv5s 模型检测螺丝在画面中的位置（单类检测），输出检测框坐标。
 
 2. **传统 CV 精测阶段**
-   在检测框 ROI 区域内，做亚像素级边缘检测与轮廓拟合，精确计算螺丝的螺帽直径、螺杆直径、螺丝长度等尺寸参数，通过像素-毫米标定系数换算为物理尺寸。
+   在检测框 ROI 区域内，做Otsu 二值化掩码 + 宽度轮廓分析，精确计算螺丝的螺帽直径(Head)、螺杆直径(Shaft)、螺杆长度(Shaft Length)等尺寸参数，通过像素-毫米标定系数换算为物理尺寸。
 
 3. **数据库匹配阶段**
    将测量结果与预先录入的螺丝型号数据库进行比对，匹配到最接近的型号并展示在界面上，经用户确认后执行硬件分拣。
@@ -35,8 +35,8 @@ USB 摄像头 / 本地图片（当前使用 samples/ 静态图）
                v
   +-------------------------+
   |  ROI 裁剪 + CV 精密测量   |
-  |  Canny 边缘检测 + 轮廓拟合 |
-  |  输出: 螺帽直径/螺丝长度/螺杆直径 |
+  |  Otsu 二值化 + 宽度轮廓分析 |
+  |  输出: 螺帽直径(H)/螺杆直径(Sd)/螺杆长度(Sl) |
   +-------------------------+
                |
                v
@@ -65,7 +65,7 @@ OPI_Feature_System_focus_vision/
 +-- core/                      >> 核心模块
 |   +-- detector.py            >> 协调控制器 -- AI > CV > DB 三阶段流水线
 |   +-- ai_detector.py         >> AI 检测模块（ONNX / RKNN / Torch 三后端）
-|   +-- measurement.py         >> CV 精密测量模块（边缘检测 + 轮廓拟合）
+|   +-- measurement.py         >> CV 精密测量模块（Otsu + 宽度轮廓分析）
 |   +-- database.py            >> 螺丝型号数据库模块（CRUD + 匹配）
 |
 +-- hardware/
@@ -98,24 +98,19 @@ OPI_Feature_System_focus_vision/
 +-- samples/                   存放待测样本图片
 +-- models/                    （保留目录，未来存放 RKNN 模型）
 |
-+-- main.py                    CLI 主入口（命令行模式，尚未适配 AI 流水线）
-+-- main_gui.py                GUI 主入口（PySide6 + QML，PC 端）
 +-- main_gui_pyqt6.py          GUI 主入口（PyQt6 Widgets，PC 端调试用）
 +-- main_gui_pyqt5.py          GUI 主入口（PyQt5，Orange Pi 部署用）
-+-- main_gui_qml.py            GUI 主入口（PySide6 + QML 备份入口）
-+-- run.bat                    双击启动 QML UI
-+-- run_legacy.bat             双击启动 PyQt6 Widgets UI
++-- main_gui_qml.py            GUI 主入口（PySide6 + QML，PC 端）
 +-- config.json                配置文件（含螺丝型号数据库与模型配置）
-+-- enviroment.txt             Conda 环境说明
 +-- requirements.txt           依赖库文件
 +-- .gitignore
 +-- README.md
 ```
 
-## 当前进度（2026-07-03 更新）
+## 当前进度（2026-07-04 更新）
 
 ```
-   核心流水线（AI > CV > DB）  ################....  80%
+   核心流水线（AI > CV > DB）  ##################..  85%
    AI 模型（已训练 + ONNX）     ####################  100%
    PyQt6 Widgets 界面升级      ##################..  90%
    PyQt5 移植适配              ####################  100%
@@ -126,7 +121,7 @@ OPI_Feature_System_focus_vision/
    Orange Pi 环境搭建           ####################  100%
    摄像头接入 + 拍照验证         ####################  100%
    RKNN 模型转换                ##..................  10%
-   CV 精测参数调优               ###.................  15%
+   CV 精测参数调优（Otsu 重构）  ###############....  70%
    V 型槽 + 步进电机            ....................   0%
    振动落料 + 硬件分拣          ....................   0%
 ```
@@ -134,7 +129,7 @@ OPI_Feature_System_focus_vision/
 ### 已完成
 - [x] YOLOv5s 模型训练（84 张训练图，21 张验证图）+ ONNX 导出
 - [x] ai_detector.py：支持 ONNX / RKNN / Torch 三后端
-- [x] measurement.py：亚像素边缘检测 + 轮廓拟合
+- [x] measurement.py：Otsu 二值化掩码 + 宽度轮廓分析（替代原 Canny 边缘检测 + 轮廓拟合方案）
 - [x] detector.py：AI > CV > DB 三阶段流水线协调
 - [x] 全流水线（AI > CV 精测 > DB 匹配）在 Windows 上调通
 - [x] QML UI 适配：AI 信息面板 + 检测来源指示
@@ -153,18 +148,17 @@ OPI_Feature_System_focus_vision/
 - [x] 按钮配色方案一（科技绿/灰蓝/深蓝分层级）
 - [x] 偏差颜色指示（绿 < 0.2mm / 黄 < 0.5mm / 红 > 0.5mm）
 - [x] 智能匹配/直接选择双模式差异化布局
+- [x] 项目文件清理：移除 main.py（旧 CLI）、main_gui.py（旧入口）、enviroment.txt、run.bat、run_legacy.bat
 
 ### 进行中
-- [ ] CV 精测参数调优：检测框偏大导致测量值偏大，需调整
-- [ ] Hough 圆检测参数适配新摄像头
+- [ ] CV 精测参数精细调优：边缘剪切比、平滑核尺寸、跳变阈值等参数继续优化
 - [ ] 扩建数据集：补拍 200-300 张现场照片后重训模型
 - [ ] QML 界面的多螺丝列表 + 偏差颜色同步适配
 
 ### 待完成
 - [ ] RKNN 模型转换（onnx > rknn）并在 Orange Pi 5 Pro 上部署
-- [ ] 摄像头标定重新确认（如有需要重跑 calibrate.py）
-- [ ] main.py 更新为 AI 流水线
 - [ ] 硬件模块联调（步进电机、V 型槽、振动落料）
+
 
 ## UI 设计演进
 
@@ -172,7 +166,7 @@ OPI_Feature_System_focus_vision/
 
 | 版本 | 技术栈 | 入口 | 特点 |
 |---|---|---|---|
-| **V1 - QML 版（PC 端主力）** | PySide6 + QML | main_gui.py | 浅色玻璃质感、Canvas 动态光晕背景、侧边导航两页布局 |
+| **V1 - QML 版（PC 端主力）** | PySide6 + QML | main_gui_qml.py | 浅色玻璃质感、Canvas 动态光晕背景、侧边导航两页布局 |
 | **V2 - PyQt6 升级版（PC 端调试）** | PyQt6 Widgets | main_gui_pyqt6.py | 功能对齐 QML，新增多螺丝列表、偏差颜色指示（绿/黄/红）、模式差异化布局、QPainter 背景动画 |
 | **V3 - PyQt5 移植版（Orange Pi 部署）** | PyQt5 Widgets | main_gui_pyqt5.py | 功能与 V2 完全一致，适配 Orange Pi 的 apt 安装环境 |
 
@@ -200,7 +194,7 @@ OpenCV / NumPy / SciPy          同左
 
 **GUI 选择**：
 - **PC 端调试**：python main_gui_pyqt6.py（功能最完整，推荐）
-- **PC 端体验**：python main_gui.py（QML 动效界面）
+- **PC 端体验**：python main_gui_qml.py（QML 动效界面）
 - **Orange Pi 部署**：python3 main_gui_pyqt5.py
 
 **注意**：
@@ -211,7 +205,7 @@ OpenCV / NumPy / SciPy          同左
 
 ### 硬币标定（已完成）
 
-2026-07-03 在 Orange Pi 上使用 1 元硬币（25mm）完成标定：
+2026-07-04 在 Orange Pi 上使用 1 元硬币（25mm）完成标定：
 
 | 项目 | 值 |
 |---|---|
@@ -245,7 +239,7 @@ img = cv2.imread('samples/sample_01.jpg')
 result = detector.analyze(img)
 print('螺丝数:', result.screw_count)
 for s in result.screws:
-    print(f'螺帽直径: {s.measurement.diameter:.1f}mm  长度: {s.measurement.length:.1f}mm')
+    print(f'螺帽直径: {s.measurement.head_diameter:.1f}mm  长度: {s.measurement.shaft_length:.1f}mm')
 "
 
 # 启动 PyQt6 Widgets 界面（功能最完整）
@@ -272,7 +266,7 @@ detector = ScrewDetector()
 result = detector.analyze(frame)
 print('螺丝数:', result.screw_count)
 for s in result.screws:
-    print(f'螺帽直径: {s.measurement.diameter:.1f}mm')
+    print(f'螺帽直径: {s.measurement.head_diameter:.1f}mm')
 "
 
 # 启动 PyQt5 界面
@@ -313,7 +307,7 @@ python scripts/convert_rknn.py --fp16
 | 领域 | 技术 | 状态 |
 |---|---|---|
 | AI 检测 | YOLOv5s + ONNX Runtime | 已接入 |
-| CV 精测 | OpenCV（Canny + 轮廓拟合） | 已实现 |
+| CV 精测 | OpenCV（Otsu + 宽度轮廓分析） | 已实现 |
 | 数据库 | JSON（config.json 内嵌） | 已实现 |
 | GUI（PC 端 - QML） | PySide6 + QML 浅色玻璃质感 | 已适配 AI |
 | GUI（PC 端 - Widgets） | PyQt6 Widgets（升级版，多螺丝列表/偏差颜色/背景动画） | 已完成 |
@@ -361,17 +355,3 @@ sudo apt-get install python3-pyqt5 -y
 | 舵机控制 | pigpio 硬件 PWM | 软件 PWM |
 | 摄像头 | libcamera / picamera2 | V4L2 / Rockchip MPP |
 | 视觉方案 | 纯传统 CV | AI 检测 + CV 精测 + 数据库匹配 |
-
-
-## 精测流水线调优说明
-
-### 测量结果对比（M3x6 螺丝）
-
-| 指标 | 原始代码 | 方向修 | 平滑加 | 最终微调 | 真实值 |
-|---|---|---|---|---|---|
-| 螺帽直径 | 4.35 mm | 4.56 mm | 4.87 mm | **5.19 mm** | ~5.5 mm |
-| 螺杆直径 | **1.09 mm** | 2.58 mm | **3.02 mm** | **3.02 mm** | 3.0 mm |
-| 螺杆长度 | **2.76 mm** | 7.78 mm | 5.51 mm | **5.51 mm** | 6.0 mm |
-| 匹配偏差 | 无匹配 | 0.420 mm | 0.020 mm | **0.020 mm** | - |
-| 置信度 | 1.000 | 0.650 | 0.570 | **0.593** | - |
-
