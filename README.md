@@ -1,4 +1,4 @@
-﻿# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
+# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
 
 基于 Orange Pi 5 Pro 的螺丝精密尺寸测量与自动筛选系统。
 原项目从树莓派 4B 移植至此平台。
@@ -22,7 +22,7 @@
 
 ### 数据处理流水线
 
-`
+```
 USB 摄像头 / 本地图片（当前使用 samples/ 静态图）
         |
         v
@@ -56,11 +56,11 @@ USB 摄像头 / 本地图片（当前使用 samples/ 静态图）
   |  硬件执行（待硬件联调）     |
   |  V 型槽开口 + 振动落料     |
   +-------------------------+
-`
+```
 
 ## 项目架构
 
-`
+```
 OPI_Feature_System_focus_vision/
 +-- core/                      >> 核心模块
 |   +-- detector.py            >> 协调控制器 -- AI > CV > DB 三阶段流水线
@@ -110,11 +110,11 @@ OPI_Feature_System_focus_vision/
 +-- requirements.txt           依赖库文件
 +-- .gitignore
 +-- README.md
-`
+```
 
 ## 当前进度（2026-07-03 更新）
 
-`
+```
    核心流水线（AI > CV > DB）  ################....  80%
    AI 模型（已训练 + ONNX）     ####################  100%
    PyQt6 Widgets 界面升级      ##################..  90%
@@ -129,7 +129,7 @@ OPI_Feature_System_focus_vision/
    CV 精测参数调优               ###.................  15%
    V 型槽 + 步进电机            ....................   0%
    振动落料 + 硬件分拣          ....................   0%
-`
+```
 
 ### 已完成
 - [x] YOLOv5s 模型训练（84 张训练图，21 张验证图）+ ONNX 导出
@@ -186,7 +186,7 @@ OPI_Feature_System_focus_vision/
 
 本项目的开发模式是 **PC 端写代码调算法，Orange Pi 端部署验证**。
 
-`
+```
 PC (Windows)                    Orange Pi 5 Pro
 Python 3.10 + conda             Python 3.10 + pip
 PySide6 + QML / PyQt6           PyQt5（apt 安装）
@@ -196,7 +196,7 @@ OpenCV / NumPy / SciPy          同左
 
 代码改动 -> git push              -> git pull
          -> scp 单文件             -> 直接覆盖
-`
+```
 
 **GUI 选择**：
 - **PC 端调试**：python main_gui_pyqt6.py（功能最完整，推荐）
@@ -222,10 +222,10 @@ OpenCV / NumPy / SciPy          同左
 
 重新标定只需在 Orange Pi 上运行：
 
-`ash
+```bash
 cd ~/OPI_Feature_System_focus_vision
 python3 calibrate.py
-`
+```
 
 把 1 元硬币放在摄像头下方，按 Enter 即可自动计算并更新 config.json。
 
@@ -233,7 +233,7 @@ python3 calibrate.py
 
 ### PC 端调试
 
-`ash
+```bash
 conda activate opi_vision
 
 # 使用样本图片运行全流水线检测
@@ -253,11 +253,11 @@ python main_gui_pyqt6.py
 
 # 启动 QML 界面
 python main_gui.py
-`
+```
 
 ### Orange Pi 端部署
 
-`ash
+```bash
 cd ~/OPI_Feature_System_focus_vision
 
 # 命令行检测（拍照模式）
@@ -277,7 +277,7 @@ for s in result.screws:
 
 # 启动 PyQt5 界面
 python3 main_gui_pyqt5.py
-`
+```
 
 ## 模型训练情况
 
@@ -295,7 +295,7 @@ python3 main_gui_pyqt5.py
 
 转换脚本已就绪：scripts/convert_rknn.py。在 x86 Linux 或 WSL2 上运行：
 
-`ash
+```bash
 # 安装 rknn-toolkit2
 pip install rknn-toolkit2
 
@@ -304,9 +304,9 @@ python scripts/convert_rknn.py
 
 # 或 FP16 量化
 python scripts/convert_rknn.py --fp16
-`
+```
 
-转换后将 models/best.rknn 传到 Orange Pi，修改 config.json 中 model.backend 为 "rknn"，并在 Orange Pi 上安装 knn-toolkit-lite2 即可。
+转换后将 models/best.rknn 传到 Orange Pi，修改 config.json 中 model.backend 为 "rknn"，并在 Orange Pi 上安装 rknn-toolkit-lite2 即可。
 
 ## 技术栈
 
@@ -327,15 +327,15 @@ python scripts/convert_rknn.py --fp16
 
 ### PC 端（Conda 推荐）
 
-`ash
+```bash
 conda create -n opi_vision python=3.10
 conda activate opi_vision
 pip install -r requirements.txt
-`
+```
 
 ### Orange Pi 5 Pro
 
-`ash
+```bash
 # 核心依赖
 pip3 install opencv-python numpy scipy matplotlib pillow
 pip3 install onnxruntime
@@ -348,7 +348,7 @@ sudo apt-get install python3-pyqt5 -y
 
 # 硬件控制
 # pip3 install OPi.GPIO
-`
+```
 
 ## 关于迁移（树莓派 4B > Orange Pi 5 Pro）
 
