@@ -8,29 +8,22 @@
       "tolerance": 0.5
     },
     {
-      "id": "M3x14",
-      "name": "M3x14 圆头螺丝",
-      "diameter": 3.0,
-      "length": 14.0,
-      "tolerance": 0.5
-    },
-    {
-      "id": "M4x10",
-      "name": "M4x10 圆头螺丝",
-      "diameter": 4.0,
-      "length": 10.0,
-      "tolerance": 0.5
-    },
-    {
       "id": "M5x20",
       "name": "M5x20 圆头螺丝",
       "diameter": 5.0,
       "length": 20.0,
       "tolerance": 0.5
+    },
+    {
+      "id": "M6x40",
+      "name": "M6x40 圆头螺丝",
+      "diameter": 6.0,
+      "length": 40.0,
+      "tolerance": 0.5
     }
   ],
   "calibration": {
-    "pixel_to_mm_ratio": 6.24,
+    "pixel_to_mm_ratio": 9.36,
     "reference_diameter_mm": 25.0
   },
   "model": {

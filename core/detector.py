@@ -1,4 +1,4 @@
-﻿"""
+"""
 协调控制器
 
 协调 AI 检测 + CV 精密测量 + 数据库匹配 三阶段流水线。
@@ -123,8 +123,8 @@ class ScrewDetector:
         color = (0, 255, 0) if match.matched else (0, 0, 255)
         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
         label = "H:{:.1f} Sd:{:.1f}".format(meas.head_diameter, meas.shaft_diameter)
-        if meas.shaft_length > 0:
-            label += " Sl:{:.1f}".format(meas.shaft_length)
+        if meas.total_length > 0:
+            label += " Len:{:.1f}".format(meas.total_length)
         cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         if match.matched:
             mlabel = "{} dev:{:.2f}".format(match.screw.name, match.deviation)
