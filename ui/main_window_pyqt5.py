@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QWidget,
 from PyQt5.QtGui import QPixmap, QImage, QColor, QLinearGradient, QPalette, QBrush, QPainter, QRadialGradient
 from PyQt5.QtCore import Qt, QTimer
 
+from hardware.hardware_manager import HardwareManager
 from core.detector import ScrewDetector
 from core.database import ScrewDatabase
 
@@ -152,6 +153,12 @@ class MainWindow(QMainWindow):
         self._timer.start()
 
         self._load_frame()
+        # 硬件管理器
+        self._hw = HardwareManager()
+        self._hw_timer = QTimer(self)
+        self._hw_timer.timeout.connect(self._update_hardware_status)
+        self._hw_timer.setInterval(300)
+        self._hw_timer.start()
 
     # ───────────────────── 样式 ─────────────────────────
 
@@ -393,6 +400,20 @@ class MainWindow(QMainWindow):
         stats = QLabel("检测次数: 0")
         stats.setStyleSheet(_ss(C_TEXT_SEC, 11))
         self._detect_count_label = stats
+        # === 硬件状态 ===
+        hw_sep = QFrame()
+        hw_sep.setFixedHeight(1)
+        hw_sep.setStyleSheet("background: rgba(0,0,0,0.06);")
+        cl.addWidget(hw_sep)
+
+        self._hw_status_label = QLabel("● 硬件未连接")
+        self._hw_status_label.setStyleSheet(_ss("#94A3B8", 11, "bold"))
+        cl.addWidget(self._hw_status_label)
+
+        self._hw_displacement_label = QLabel("")
+        self._hw_displacement_label.setStyleSheet(_ss(C_TEXT_DIM, 10))
+        cl.addWidget(self._hw_displacement_label)
+
         cl.addWidget(stats)
 
         cl.addStretch()
@@ -424,6 +445,38 @@ class MainWindow(QMainWindow):
         self._btn_next.clicked.connect(self._go_next)
         cl.addWidget(self._btn_next)
 
+        # === 硬件按钮行 ===
+        hw_btn_row = QHBoxLayout()
+        hw_btn_row.setSpacing(6)
+
+        self._btn_connect = QPushButton("连接硬件")
+        self._btn_connect.setStyleSheet("""
+            QPushButton {
+                background-color: #E2E8F0; color: #1E3A5F;
+                min-height: 40px; border-radius: 8px; font-size: 12px; font-weight: bold;
+                padding: 6px 12px; border: none;
+            }
+            QPushButton:hover { background-color: #CBD5E1; }
+        """)
+        self._btn_connect.setCursor(Qt.PointingHandCursor)
+        self._btn_connect.clicked.connect(self._connect_hardware)
+        hw_btn_row.addWidget(self._btn_connect)
+
+        self._btn_home = QPushButton("归零")
+        self._btn_home.setStyleSheet("""
+            QPushButton {
+                background-color: #E2E8F0; color: #1E3A5F;
+                min-height: 40px; border-radius: 8px; font-size: 12px; font-weight: bold;
+                padding: 6px 12px; border: none;
+            }
+            QPushButton:hover { background-color: #CBD5E1; }
+        """)
+        self._btn_home.setCursor(Qt.PointingHandCursor)
+        self._btn_home.clicked.connect(self._home_hardware)
+        hw_btn_row.addWidget(self._btn_home)
+
+        cl.addLayout(hw_btn_row)
+
         self._btn_command = QPushButton("下达指令")
         self._btn_command.setStyleSheet("""
             QPushButton {
@@ -436,6 +489,20 @@ class MainWindow(QMainWindow):
         """)
         self._btn_command.clicked.connect(self._send_command)
         cl.addWidget(self._btn_command)
+
+        self._btn_estop = QPushButton("紧急停止")
+        self._btn_estop.setStyleSheet("""
+            QPushButton {
+                background-color: #DC2626; color: #FFFFFF;
+                min-height: 40px; border-radius: 8px; font-size: 13px; font-weight: bold;
+                padding: 8px 16px; border: none;
+            }
+            QPushButton:hover { background-color: #B91C1C; }
+            QPushButton:pressed { background-color: #991B1B; }
+        """)
+        self._btn_estop.setCursor(Qt.PointingHandCursor)
+        self._btn_estop.clicked.connect(self._emergency_stop_safe)
+        cl.addWidget(self._btn_estop)
 
         col.addWidget(card)
 
@@ -767,12 +834,30 @@ class MainWindow(QMainWindow):
         self.current_idx = (self.current_idx + 1) % len(self.image_files)
         self._load_frame()
 
+
     def _send_command(self):
-        if self._diameter > 0:
-            print(f"[HARDWARE] 指令下发: 螺帽{self._diameter:.2f}mm 长度{self._length:.2f}mm 螺杆{self._width:.2f}mm")
-            self._set_status("指令已传达", "#00B894")
-        else:
+        """下达指令 — 使用当前分析结果执行硬件分选"""
+        if self._diameter <= 0:
             self._set_status("无有效数据", "#FF7675")
+            return
+
+        if self._hw.status == self._hw.STATUS_DISCONNECTED:
+            self._set_status("请先连接硬件", "#FF7675")
+            return
+
+        if self._hw.is_busy:
+            self._set_status("硬件忙，请稍候", "#FDCB6E")
+            return
+
+        sort_target = self._length if self._length > 0 else 12.5
+        print(f"[指令] 下发分选: 目标={sort_target:.2f}mm, 螺帽{self._diameter:.2f}mm, 长度{self._length:.2f}mm")
+
+        import threading
+        t = threading.Thread(target=self._hw.perform_sorting, args=(sort_target,))
+        t.daemon = True
+        t.start()
+
+        self._set_status(f"分选中... 目标{sort_target:.1f}mm", "#2563EB")
 
     def _set_status(self, text, color):
         self._status_text.setText(f"● {text}")
@@ -819,8 +904,55 @@ class MainWindow(QMainWindow):
                 self._bg_canvas.setGeometry(cw.rect())
         super().resizeEvent(event)
 
+    # ── 硬件控制 ───────────────────────────────────────
+
+    def _connect_hardware(self):
+        """连接硬件"""
+        self._hw.connect()
+        self._set_status("硬件已连接", "#00B894")
+
+    def _home_hardware(self):
+        """归零"""
+        self._set_status("归零中...", "#FDCB6E")
+        self._hw.home()
+        self._set_status("归零完成", "#00B894")
+
+    def _emergency_stop_safe(self):
+        """紧急停止"""
+        self._hw.emergency_stop()
+        self._set_status("紧急停止", "#FF7675")
+
+    def _update_hardware_status(self):
+        """更新硬件状态显示"""
+        if not hasattr(self, '_hw'):
+            return
+        status = self._hw.status
+        text_map = {
+            self._hw.STATUS_DISCONNECTED: ("● 硬件未连接", "#94A3B8"),
+            self._hw.STATUS_CONNECTING: ("● 连接中...", "#FDCB6E"),
+            self._hw.STATUS_CONNECTED: ("● 硬件就绪", "#00B894"),
+            self._hw.STATUS_HOMING: ("● 归零中...", "#FDCB6E"),
+            self._hw.STATUS_SORTING: ("● 分选中...", "#2563EB"),
+            self._hw.STATUS_COMPLETED: ("● 分选完成", "#00B894"),
+            self._hw.STATUS_ERROR: ("● 硬件错误", "#FF7675"),
+        }
+        text, color = text_map.get(status, ("● 未知", "#94A3B8"))
+        if hasattr(self, '_hw_status_label'):
+            self._hw_status_label.setText(text)
+            self._hw_status_label.setStyleSheet(_ss(color, 11, "bold"))
+        if hasattr(self, '_hw_displacement_label'):
+            if self._hw.current_displacement > 0:
+                self._hw_displacement_label.setText(
+                    f"电阻尺位移: {self._hw.current_displacement:.2f} mm")
+            else:
+                self._hw_displacement_label.setText("")
+
     def closeEvent(self, event):
         self._timer.stop()
+        if hasattr(self, '_hw_timer'):
+            self._hw_timer.stop()
+        if hasattr(self, '_hw'):
+            self._hw.disconnect()
         super().closeEvent(event)
 
 
