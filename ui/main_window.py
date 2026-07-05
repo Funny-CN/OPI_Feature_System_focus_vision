@@ -5,7 +5,7 @@ import numpy as np
 import math
 from PyQt6.QtWidgets import (QMainWindow, QPushButton, QVBoxLayout, QWidget,
                              QLabel, QHBoxLayout, QComboBox, QFrame, QApplication,
-                             QSizePolicy, QScrollArea)
+                             QSizePolicy, QScrollArea, QMessageBox)
 from PyQt6.QtGui import QPixmap, QImage, QColor, QLinearGradient, QPalette, QBrush, QPainter, QRadialGradient
 from PyQt6.QtCore import Qt, QTimer
 
@@ -138,6 +138,7 @@ class MainWindow(QMainWindow):
         self._ai_confidence = 0.0
         self._ai_screw_count = 0
         self._detection_source = "Hough"
+        self._annotated_frame = None
 
         self._load_ai_info()
         self._scan_samples()
@@ -274,6 +275,26 @@ class MainWindow(QMainWindow):
         self._image_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         il.addWidget(self._image_label)
         cl.addWidget(img_frame, stretch=1)
+
+        # 拍照按钮
+        photo_btn_row = QHBoxLayout()
+        photo_btn_row.setContentsMargins(8, 4, 8, 8)
+        self._btn_photo = QPushButton("📷 拍照")
+        self._btn_photo.setStyleSheet("""
+            QPushButton {
+                background-color: #2563EB; color: #FFFFFF; border: none;
+                min-height: 40px; border-radius: 8px; font-size: 13px; font-weight: bold;
+                padding: 8px 32px;
+            }
+            QPushButton:hover { background-color: #1D4ED8; }
+            QPushButton:pressed { background-color: #1E40AF; }
+        """)
+        self._btn_photo.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._btn_photo.clicked.connect(self._take_photo)
+        photo_btn_row.addStretch()
+        photo_btn_row.addWidget(self._btn_photo)
+        photo_btn_row.addStretch()
+        cl.addLayout(photo_btn_row)
 
         col.addWidget(card)
         return col
@@ -742,6 +763,36 @@ class MainWindow(QMainWindow):
         self._set_status(f"已选择 #{idx + 1} {name_txt}", "#4FC3F7")
 
     # ── 核心检测 ───────────────────────────────────────
+    def _take_photo(self):
+        """拍照：弹窗提示后检测螺丝并绘制矩形框"""
+        reply = QMessageBox.question(
+            self,
+            "拍照准备",
+            "请将待测量的物品放置在摄像头下，然后点击“确认”开始拍照。",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel
+        )
+        if reply != QMessageBox.StandardButton.Ok:
+            return
+
+        frame = self._get_frame()
+        if frame is None:
+            self._set_status("无画面数据", "#FF7675")
+            return
+
+        self._set_status("拍照中...", "#FDCB6E")
+        QApplication.processEvents()
+
+        analysis = self.detector.analyze(frame)
+        self._display(analysis.annotated_frame)
+        self._annotated_frame = analysis.annotated_frame.copy()
+
+        if analysis.screws:
+            self._detection_count += 1
+            self._detect_count_label.setText(f"检测次数: {self._detection_count}")
+            self._set_status(f"已捕获，检测到 {analysis.screw_count} 颗螺丝", "#00B894")
+        else:
+            self._set_status("拍照完成，未检测到螺丝", "#FF7675")
 
     def _load_frame(self):
         frame = self._get_frame()
@@ -758,6 +809,7 @@ class MainWindow(QMainWindow):
             self._match_deviation = 0.0
             self._analysis_screws = []
             self._selected_screw_idx = 0
+            self._annotated_frame = None
             self._update_meas()
             self._update_match_display()
             self._render_screw_list()
@@ -769,10 +821,13 @@ class MainWindow(QMainWindow):
         name = self.image_files[self.current_idx]
         if self._file_label.text() != name:
             self._load_frame()
-        frame = self._get_frame()
-        if frame is not None:
-            self._display(frame)
-            self._frame_counter += 1
+        if self._annotated_frame is not None:
+            self._display(self._annotated_frame)
+        else:
+            frame = self._get_frame()
+            if frame is not None:
+                self._display(frame)
+        self._frame_counter += 1
 
     def _do_analyze(self):
         frame = self._get_frame()
@@ -789,6 +844,7 @@ class MainWindow(QMainWindow):
 
         analysis = self.detector.analyze(frame)
         self._display(analysis.annotated_frame)
+        self._annotated_frame = analysis.annotated_frame.copy()
 
         self._ai_loaded = self.detector.ai.is_loaded
         self._ai_backend = self.detector.ai.backend or "--"
@@ -837,10 +893,6 @@ class MainWindow(QMainWindow):
 
     def _send_command(self):
         """下达指令 — 使用当前分析结果执行硬件分选"""
-        if self._diameter <= 0:
-            self._set_status("无有效数据", "#FF7675")
-            return
-
         if self._hw.status == self._hw.STATUS_DISCONNECTED:
             self._set_status("请先连接硬件", "#FF7675")
             return
@@ -849,15 +901,44 @@ class MainWindow(QMainWindow):
             self._set_status("硬件忙，请稍候", "#FDCB6E")
             return
 
-        sort_target = self._length if self._length > 0 else 12.5
-        print(f"[指令] 下发分选: 目标={sort_target:.2f}mm, 螺帽{self._diameter:.2f}mm, 长度{self._length:.2f}mm")
+        # ── 批量模式：检测到多颗螺丝，计算最优槽宽 ──
+        if len(self._analysis_screws) >= 2:
+            measurements = [(sc["diameter"], sc["width"]) for sc in self._analysis_screws
+                           if sc["diameter"] > 0 and sc["width"] > 0]
+            if not measurements:
+                self._set_status("无有效测量数据", "#FF7675")
+                return
+
+            import threading
+            t = threading.Thread(target=self._hw.perform_batch_sorting, args=(measurements,))
+            t.daemon = True
+            t.start()
+
+            W, warning = self._hw.compute_slot_width(measurements)
+            msg = f"批量分选中... {len(measurements)}颗 槽宽{W:.2f}mm"
+            if warning:
+                msg += f" ({warning})"
+            print(f"[指令] 批量分选: {msg}")
+            self._set_status(msg, "#2563EB")
+            return
+
+        # ── 单颗模式：使用智能目标计算 ──
+        head_d = self._diameter
+        shaft_d = self._width
+
+        if head_d <= 0 and shaft_d <= 0:
+            self._set_status("无有效数据", "#FF7675")
+            return
+
+        target, screw_name = self._hw.calculate_sort_target(head_d, shaft_d)
+        print(f"[指令] {screw_name} 分选: 螺帽{head_d:.2f} 螺杆{shaft_d:.2f} → 槽宽目标{target:.2f}mm")
 
         import threading
-        t = threading.Thread(target=self._hw.perform_sorting, args=(sort_target,))
+        t = threading.Thread(target=self._hw.perform_sorting, args=(target,))
         t.daemon = True
         t.start()
 
-        self._set_status(f"分选中... 目标{sort_target:.1f}mm", "#2563EB")
+        self._set_status(f"{screw_name} 分选中... 槽宽{target:.1f}mm", "#2563EB")
 
     def _set_status(self, text, color):
         self._status_text.setText(f"● {text}")

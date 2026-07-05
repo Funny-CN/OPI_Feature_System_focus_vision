@@ -12,6 +12,7 @@ import threading
 from hardware import opi_motor as motor
 from hardware import opi_sensor as sensor
 from hardware import opi_ir as ir_sensor
+from core.database import ScrewDatabase
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,9 @@ class HardwareManager:
         self._lock = threading.Lock()
         self._stop_flag = False
         self._hardware_available = False
+        self._db = ScrewDatabase()
+        self._slot_width = 0.0
+        self._slot_width_warning = ""
 
     @property
     def status(self): return self._status
@@ -44,6 +48,12 @@ class HardwareManager:
 
     @property
     def hardware_available(self): return self._hardware_available
+
+    @property
+    def slot_width(self): return self._slot_width
+
+    @property
+    def slot_width_warning(self): return self._slot_width_warning
 
     @property
     def is_busy(self):
@@ -164,6 +174,113 @@ class HardwareManager:
             motor.emergency_stop()
             self._status = self.STATUS_ERROR
             return False
+
+    # ── 槽宽计算（参考硬件联动项目 compute_slot_width）─────────────────
+    @staticmethod
+    def compute_slot_width(measurements, tolerance_mm=0.15):
+        """
+        根据 1~3 组 (螺帽直径, 螺杆直径) 计算最优槽宽 W。
+
+        Args:
+            measurements: list of (head_diameter, shaft_diameter) tuples
+            tolerance_mm: 安全余量
+
+        Returns:
+            (W, warning) — W 为槽宽 (mm)，warning 为备注或 None
+        """
+        if not measurements:
+            return 0.0, "无测量数据"
+        sorted_m = sorted(measurements, key=lambda m: m[0])
+        n = len(sorted_m)
+        Ns = [m[0] for m in sorted_m]
+        Ss = [m[1] for m in sorted_m]
+        if n >= 3:
+            lower = max(Ns[0], Ss[1])
+            upper = min(Ns[1], Ss[2])
+            desc = "3种"
+        elif n == 2:
+            N0, S0 = sorted_m[0]
+            N1, S1 = sorted_m[1]
+            ratio = N1 / N0 if N0 > 0 else 99
+            if ratio > 1.7:
+                lower = N0
+                upper = S1
+                desc = "2种(疑似跳中)"
+            elif N1 > 9.0:
+                lower = S0
+                upper = min(N0, S1)
+                desc = "2种(中+大)"
+            else:
+                lower = max(N0, S1)
+                upper = N1
+                desc = "2种(小+中)"
+        else:
+            N, S = sorted_m[0]
+            if N < 6.0:
+                lower = N
+                upper = N + 2.0
+                desc = "1种(小)"
+            elif N < 9.0:
+                lower = S
+                upper = N
+                desc = "1种(中)"
+            else:
+                lower = S - 2.0
+                upper = S
+                desc = "1种(大)"
+        lower_safe = lower + tolerance_mm
+        upper_safe = upper - tolerance_mm
+        if lower_safe >= upper_safe:
+            W = round((lower + upper) / 2, 2)
+            return W, f"{desc} W={W:.2f} [{lower:.2f}~{upper:.2f}] 无安全窗口"
+        W = round((lower_safe + upper_safe) / 2, 2)
+        return W, None
+
+    # ── 智能目标计算（参考硬件联动项目 sort_by_measurements）─────────
+    def calculate_sort_target(self, head_diameter: float, shaft_diameter: float):
+        """
+        根据测量值计算 V 型槽目标开合宽度。
+        优先匹配数据库型号，用 diameter + 0.5 作为目标；
+        匹配失败则回退到 shaft_diameter + 0.5 或 head_diameter + 0.3。
+
+        Returns:
+            (target_mm, screw_name)
+        """
+        target = (shaft_diameter + 0.5) if shaft_diameter > 0 else (head_diameter + 0.3)
+        screw_name = "未知型号"
+
+        match = self._db.match(shaft_diameter if shaft_diameter > 0 else head_diameter)
+        if match.matched and match.screw:
+            target = match.screw.diameter + 0.5
+            screw_name = match.screw.name
+
+        return target, screw_name
+
+    # ── 批量分拣（参考硬件联动项目 batch_sort）───────────────────────
+    def perform_batch_sorting(self, measurements):
+        """
+        批量分拣：根据多颗螺丝的测量值计算最优槽宽 W，然后执行分选。
+
+        Args:
+            measurements: list of (head_diameter, shaft_diameter) tuples
+
+        Returns:
+            bool: 分拣是否成功
+        """
+        if not measurements:
+            logger.warning("[批量分选] 无测量数据，跳过")
+            return False
+
+        W, warning = self.compute_slot_width(measurements)
+        self._slot_width = W
+        self._slot_width_warning = warning or ""
+
+        if W <= 0:
+            logger.error("[批量分选] 无法计算有效槽宽")
+            return False
+
+        logger.info(f"[批量分选] W={W:.2f}mm, {len(measurements)}颗螺丝, {warning or ''}")
+        return self.perform_sorting(W)
 
     def emergency_stop(self):
         logger.warning("[急停] 触发")
