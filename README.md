@@ -131,7 +131,7 @@ OPI_Feature_System_focus_vision/
 - [ ] QML 界面的多螺丝列表 + 偏差颜色同步适配
 
 ### 待完成
-- [ ] RKNN 模型转换（onnx > rknn）并在 Orange Pi 5 Pro 上部署
+- [ ] RKNN 模型转换（onnx > rknn）并在 开发板 上部署
 - [ ] 硬件模块联调（步进电机、V 型槽、振动落料）
 
 ## UI 设计演进
