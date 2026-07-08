@@ -311,7 +311,7 @@ conda activate opi_vision
 pip install -r requirements.txt
 ```
 
-### Orange Pi 5 Pro
+### Pi 5 Pro
 
 ```bash
 # 核心依赖
