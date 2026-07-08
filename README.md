@@ -1,7 +1,6 @@
-# 螺丝特征筛选视觉系统（Orange Pi 5 Pro 移植版）
+﻿# 螺丝特征筛选视觉系统
 
-基于 Orange Pi 5 Pro 的螺丝精密尺寸测量与自动筛选系统。
-原项目从树莓派 4B 移植至此平台。
+基于 RK3588 的螺丝精密尺寸测量与自动筛选系统。
 
 ## 方案概述
 
@@ -87,7 +86,7 @@ OPI_Feature_System_focus_vision/
    标定                        ##########..........  45%
    数据集（已标注 105 张）       ####................  20%
    项目部署到 Orange Pi         ####################  100%
-   Orange Pi 环境搭建           ####################  100%
+   环境搭建                     ####################  100%
    摄像头接入 + 拍照验证         ####################  100%
    RKNN 模型转换                ##..................  10%
    CV 精测参数调优（Otsu 重构）  ###############....  70%
@@ -111,7 +110,7 @@ OPI_Feature_System_focus_vision/
 - [x] PyQt5 版本移植（ui/main_window_pyqt5.py + main_gui_pyqt5.py）
 - [x] QML UI 适配：AI 信息面板 + 检测来源指示 + 螺丝列表下拉框
 - [x] 项目代码完整部署到 Orange Pi 5 Pro
-- [x] Orange Pi 环境搭建：Python 3.10 + OpenCV + PyQt5 + ONNX Runtime
+- [x] 环境搭建：Python 3.10 + OpenCV + PyQt5 + ONNX Runtime
 - [x] AI 模型在 Orange Pi 上成功加载并运行（CPUExecutionProvider）
 - [x] USB 摄像头接入 Orange Pi 并成功拍照
 - [x] 硬币标定（1 元硬币 25mm）=> pixel_to_mm_ratio = 9.36
@@ -143,17 +142,17 @@ OPI_Feature_System_focus_vision/
 |---|---|---|---|
 | **V1 - QML 版（PC 端主力）** | PySide6 + QML | main_gui_qml.py | 浅色玻璃质感、Canvas 动态光晕背景、侧边导航两页布局 |
 | **V2 - PyQt6 升级版（PC 端调试）** | PyQt6 Widgets | main_gui_pyqt6.py | 功能对齐 QML，新增多螺丝列表、偏差颜色指示（绿/黄/红）、模式差异化布局、QPainter 背景动画 |
-| **V3 - PyQt5 移植版（Orange Pi 部署）** | PyQt5 Widgets | main_gui_pyqt5.py | 功能与 V2 完全一致，适配 Orange Pi 的 apt 安装环境 |
+| **V3 - PyQt5 移植版（开发板 部署）** | PyQt5 Widgets | main_gui_pyqt5.py | 功能与 V2 完全一致，适配 开发板 的 apt 安装环境 |
 
 **核心差异说明**：
 - 三个版本共享同一套 core/ 算法模块和 config.json 配置
 - V2 和 V3 在功能上完全对称（PyQt6 与 PyQt5 的 API 差异已全部转换）
 - V1（QML）仍有部分新功能待同步（多螺丝列表、偏差颜色）
-- 建议 PC 调试用 V2（python main_gui_pyqt6.py），Orange Pi 部署用 V3（python main_gui_pyqt5.py）
+- 建议 PC 调试用 V2（python main_gui_pyqt6.py），开发板 部署用 V3（python main_gui_pyqt5.py）
 
 ## 双端开发工作流
 
-本项目的开发模式是 **PC 端写代码调算法，Orange Pi 端部署验证**。
+本项目的开发模式是 **PC 端写代码调算法，开发板 端部署验证**。
 
 ```
 PC (Windows)                    Orange Pi 5 Pro
@@ -170,11 +169,11 @@ OpenCV / NumPy / SciPy          同左
 **GUI 选择**：
 - **PC 端调试**：python main_gui_pyqt6.py（功能最完整，推荐）
 - **PC 端体验**：python main_gui_qml.py（QML 动效界面）
-- **Orange Pi 部署**：python3 main_gui_pyqt5.py
+- **开发板 部署**：python3 main_gui_pyqt5.py
 
 **注意**：
 - 核心算法（core/ 目录）纯 Python，两边代码完全一致
-- 硬件模块（hardware/ 目录）自动检测运行环境，非 Orange Pi 时回退模拟模式
+- 硬件模块（hardware/ 目录）自动检测运行环境，非 开发板 时回退模拟模式
 - 配置文件 config.json 需要两边保持一致（特别是 pixel_to_mm_ratio）
 
 ## 标定说明
@@ -254,7 +253,7 @@ python3 main_gui_pyqt5.py
 | 标注格式 | YOLO 格式 .txt，单类 "screw" |
 | 训练轮数 | 100 epochs，输入尺寸 640x640 |
 | 输出格式 | .pt > .onnx (ONNX opset 12, 约 27.5 MB) |
-| 待完成 | 训练数据仅 84 张，偏少。部署后建议补拍 200-300 张重训 |
+| 待完成 | 训练数据仅 84 张，后续补充 |
 | 待完成 | 当前仅为 ONNX 格式，部署到 Orange Pi 前需转 RKNN |
 
 导出 ONNX 命令：
@@ -328,15 +327,3 @@ sudo apt-get install python3-pyqt5 -y
 # 硬件控制
 # pip3 install OPi.GPIO
 ```
-
-## 关于迁移（树莓派 4B > Orange Pi 5 Pro）
-
-| 方面 | 树莓派 4B | Orange Pi 5 Pro |
-|---|---|---|
-| SoC | Broadcom BCM2711 | Rockchip RK3585 |
-| NPU | 无 | 6 TOPS（支持 INT8 量化推理） |
-| GPIO 库 | RPi.GPIO / pigpio | OPi.GPIO / python3-gpiod |
-| 引脚编号 | BCM 方案 | BOARD 物理编号 |
-| 舵机控制 | pigpio 硬件 PWM | 软件 PWM |
-| 摄像头 | libcamera / picamera2 | V4L2 / Rockchip MPP |
-| 视觉方案 | 纯传统 CV | AI 检测 + CV 精测 + 数据库匹配 |
